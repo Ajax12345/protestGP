@@ -109,10 +109,12 @@ class Genotype:
             if i.input in self.gate_bindings:
                 for j in self.gate_bindings[i.input].parents:
                     parent_gates.add(j)
+            
+            parent_gates.add(i.input)
 
         print('parent gates', parent_gates)
 
-        return len(parent_gates)
+        return len(parent_gates - {i.name for i in self.kwargs['constants']})
 
 
     def traverse(self) -> None:
@@ -159,8 +161,31 @@ if __name__ == '__main__':
         ],
         outputs = [node.Output(int, 11, 10)]
     )
-
+    
     with g:     
         print(g(0, 0, 1))
         print('complexity', g.complexity)
-
+    
+    
+    g = Genotype(
+        inputs = [
+            node.Input(int, 0),
+            node.Input(int, 1),
+            node.Input(int, 2)
+        ],
+        constants = [
+            node.Constant(int, 3, value = 0),
+            node.Constant(int, 4, value = 1)
+        ],
+        gates = [
+            node.operator.NAND(5, inputs = [0, 1]),
+            node.operator.NAND(6, inputs = [2, 3]),
+            node.operator.NAND(7, inputs = [5, 1]),
+            node.operator.NAND(8, inputs = [2, 4]),
+            node.operator.NAND(9, inputs = [7, 7])
+        ],
+        outputs = [node.Output(int, 11, 0)]
+    )
+    print(g(0, 0, 0))
+    print(g.complexity)
+    
