@@ -60,6 +60,7 @@ class node:
 
     class operator:
         class NAND:
+            INPUT_NUM = 2
             def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
                 self.name = name
                 self.inputs = inputs
@@ -72,6 +73,49 @@ class node:
             def __repr__(self) -> str:
                 return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
 
+        class OR:
+            INPUT_NUM = 2
+            def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
+                self.name = name
+                self.inputs = inputs
+                self.parents = []
+
+            def __call__(self, *inputs) -> typing.Any:
+                assert len(inputs) == len(self.inputs)
+                return any(inputs)
+        
+            def __repr__(self) -> str:
+                return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
+
+        class AND:
+            INPUT_NUM = 2
+            def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
+                self.name = name
+                self.inputs = inputs
+                self.parents = []
+
+            def __call__(self, *inputs) -> typing.Any:
+                assert len(inputs) == len(self.inputs)
+                return all(inputs)
+        
+            def __repr__(self) -> str:
+                return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
+
+        class NOT:
+            INPUT_NUM = 1
+            def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
+                self.name = name
+                self.inputs = inputs
+                self.parents = []
+
+            def __call__(self, *inputs) -> typing.Any:
+                assert len(inputs) == len(self.inputs)
+                return not self.inputs[0]
+        
+            def __repr__(self) -> str:
+                return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
+
+
 class Genotype:
     def __init__(self, **kwargs:dict) -> None:
         self.kwargs = kwargs
@@ -82,13 +126,15 @@ class Genotype:
         return
 
     def __exit__(self, *_) -> None:
+        self.reset()
+
+    def reset(self) -> None:
         self.value_bindings = None
         for i in self.gate_bindings.values():
             i.parents = []
 
         for i in self.kwargs['inputs']:
             i.value = None
-
 
     def __call__(self, *traits) -> typing.Any:
         assert len(traits) == len(self.kwargs['inputs'])
@@ -116,7 +162,18 @@ class Genotype:
 
         return len(parent_gates - {i.name for i in self.kwargs['constants']})
 
+    def mutate(self, prob:float = 0.1,
+            gates = [node.operator.NAND, node.operator.AND, 
+                node.operator.OR, node.operator.NOT]) -> None:
+        """
+        mutation options:
+            - add a new gate
+            - remove an existing gate
+            - change the origin of an existing input (rewire edge)
+            - update gate type
+        """
 
+        
     def traverse(self) -> None:
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
                 **{i.name:i.value for i in self.kwargs['constants']}}
@@ -162,30 +219,10 @@ if __name__ == '__main__':
         outputs = [node.Output(int, 11, 10)]
     )
     
-    with g:     
-        print(g(0, 0, 1))
-        print('complexity', g.complexity)
+  
+    print(g)
+    print(g(0, 0, 1))
+    print(g.gate_bindings[7].parents)
     
     
-    g = Genotype(
-        inputs = [
-            node.Input(int, 0),
-            node.Input(int, 1),
-            node.Input(int, 2)
-        ],
-        constants = [
-            node.Constant(int, 3, value = 0),
-            node.Constant(int, 4, value = 1)
-        ],
-        gates = [
-            node.operator.NAND(5, inputs = [0, 1]),
-            node.operator.NAND(6, inputs = [2, 3]),
-            node.operator.NAND(7, inputs = [5, 1]),
-            node.operator.NAND(8, inputs = [2, 4]),
-            node.operator.NAND(9, inputs = [7, 7])
-        ],
-        outputs = [node.Output(int, 11, 0)]
-    )
-    print(g(0, 0, 0))
-    print(g.complexity)
     
