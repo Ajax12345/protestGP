@@ -150,34 +150,38 @@ class Genotype:
     def render(self) -> None:
         G, labels = nx.DiGraph(), {}
         for i in self.kwargs['inputs']:
-            G.add_node(i.name)
+            G.add_node(i.name, layer = 1)
             labels[i.name] = f'Input({i.name})'
         
         for i in self.kwargs['constants']:
-            G.add_node(i.name)
+            G.add_node(i.name, layer = 1)
             labels[i.name] = f'Constant({i.name})'
 
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
                 **{i.name:i.value for i in self.kwargs['constants']}}
         
-        seen = []
+        seen, layer = [], 2
         while (queue:=[gate for gate in self.kwargs['gates'] if all(i in values for i in gate.inputs) and gate.name not in seen]):
             for gate in queue:
-                G.add_node(gate.name)
+                G.add_node(gate.name, layer = layer)
                 labels[gate.name] = f'{gate.__class__.__name__}({gate.name})'
                 seen.append(gate.name)
                 values[gate.name] = gate(*[values[i] for i in gate.inputs])
                 for i in gate.inputs:
                     G.add_edge(i, gate.name)
 
+            layer += 1
+
         for i in self.kwargs['outputs']:
-            G.add_node(i.name)
+            G.add_node(i.name, layer = layer)
             labels[i.name] = f'Output({i.name})'
             G.add_edge(i.input, i.name)
         
         write_dot(G, 'test.dot')
-        pos = graphviz_layout(G, prog='dot')
-        nx.draw(G, pos, labels = labels, with_labels = True, arrows = True)
+        #pos = graphviz_layout(G, prog='dot')
+        #so^>v<dph8’
+        pos = nx.multipartite_layout(G, subset_key="layer")
+        nx.draw(G, pos, labels = labels, with_labels = True, arrows = True, node_shape = 's')
         plt.show()
 
     @property
