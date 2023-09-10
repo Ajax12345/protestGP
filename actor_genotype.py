@@ -1,5 +1,7 @@
 import random, typing, json
-import collections
+import collections, networkx as nx
+from networkx.drawing.nx_agraph import write_dot, graphviz_layout
+import matplotlib.pyplot as plt
 
 class node:
     class Input:
@@ -145,6 +147,39 @@ class Genotype:
         self.traverse()
         return [self.value_bindings[i.input] for i in self.kwargs['outputs']]
 
+    def render(self) -> None:
+        G, labels = nx.DiGraph(), {}
+        for i in self.kwargs['inputs']:
+            G.add_node(i.name)
+            labels[i.name] = f'Input({i.name})'
+        
+        for i in self.kwargs['constants']:
+            G.add_node(i.name)
+            labels[i.name] = f'Constant({i.name})'
+
+        values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
+                **{i.name:i.value for i in self.kwargs['constants']}}
+        
+        seen = []
+        while (queue:=[gate for gate in self.kwargs['gates'] if all(i in values for i in gate.inputs) and gate.name not in seen]):
+            for gate in queue:
+                G.add_node(gate.name)
+                labels[gate.name] = f'{gate.__class__.__name__}({gate.name})'
+                seen.append(gate.name)
+                values[gate.name] = gate(*[values[i] for i in gate.inputs])
+                for i in gate.inputs:
+                    G.add_edge(i, gate.name)
+
+        for i in self.kwargs['outputs']:
+            G.add_node(i.name)
+            labels[i.name] = f'Output({i.name})'
+            G.add_edge(i.input, i.name)
+        
+        write_dot(G, 'test.dot')
+        pos = graphviz_layout(G, prog='dot')
+        nx.draw(G, pos, labels = labels, with_labels = True, arrows = True)
+        plt.show()
+
     @property
     def complexity(self) -> int:
         if self.value_bindings is None:
@@ -158,7 +193,7 @@ class Genotype:
             
             parent_gates.add(i.input)
 
-        print('parent gates', parent_gates)
+        #print('parent gates', parent_gates)
 
         return len(parent_gates - {i.name for i in self.kwargs['constants']})
 
@@ -178,7 +213,7 @@ class Genotype:
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
                 **{i.name:i.value for i in self.kwargs['constants']}}
         
-        print(values)
+        #print(values)
         seen = []
         while (queue:=[gate for gate in self.kwargs['gates'] if all(i in values for i in gate.inputs) and gate.name not in seen]):
             for gate in queue:
@@ -191,7 +226,7 @@ class Genotype:
                         gate.parents = {*gate.parents, i}
             
         self.value_bindings = values
-        print(self.value_bindings)
+        #print(self.value_bindings)
         
     def __repr__(self) -> str:
         return json.dumps({a:[*map(repr, b)] for a, b in self.kwargs.items()}, indent=4)
@@ -219,8 +254,10 @@ if __name__ == '__main__':
         outputs = [node.Output(int, 11, 10)]
     )
     
-    
+    '''
     for a, b in [([0, 0, 0], False), ([0, 0, 1], False), ([0, 1, 0], True), ([0, 1, 1], False), ([1, 0, 0], True), ([1, 0, 1], True), ([1, 1, 0], True), ([1, 1, 1], True)]:
         with g:
-            assert g(*a[::-1]) == [b]    
+            assert g(*a[::-1]) == [b]  
+    '''  
+    g.render()
     
