@@ -242,7 +242,7 @@ class Genotype:
 
                 choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
   
-                if (mutation:=random.choice([2])) == 1:
+                if (mutation:=random.choice([3])) == 1:
                     #ADD NEW GATE
                     _gate = random.choice(gates)
                     gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
@@ -293,6 +293,20 @@ class Genotype:
                     del self.gate_bindings[gate.name]
                     self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
         
+                elif mutation == 3:
+                    #rewire edges
+                    for i in self.gate_bindings:
+                        parents = [j.name for j in self.kwargs['inputs']] + \
+                            [j.name for j in self.kwargs['constants']] + \
+                            [self.gate_bindings[j].name for j in self.gate_bindings if self.gate_bindings[j].layer < self.gate_bindings[i].layer]
+                        
+                        for x, a in enumerate(self.gate_bindings[i].inputs):
+                            if random.random() >= 1 - 0.1:
+                                print('mutating gate connection', self.gate_bindings[i])
+                                self.gate_bindings[i].inputs[x] = random.choice(parents)
+                                print('after rewiring', self.gate_bindings[i])
+
+
     def traverse(self) -> None:
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
                 **{i.name:i.value for i in self.kwargs['constants']}}
