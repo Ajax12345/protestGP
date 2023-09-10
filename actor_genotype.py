@@ -240,10 +240,13 @@ class Genotype:
                 if self.value_bindings is None:
                     self.traverse()
 
-                if (mutation:=random.choice([1])) == 1:
+                choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
+  
+                if (mutation:=random.choice([2])) == 1:
+                    #ADD NEW GATE
                     _gate = random.choice(gates)
                     gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
-                    print('chosen gate', gate)
+                    #print('chosen gate', gate)
                     parents, max_depth = set(), 1
                     for i in gate.inputs:
                         if i in self.gate_bindings:
@@ -269,6 +272,26 @@ class Genotype:
                     self.gate_bindings[gate.name] = gate
                     self.kwargs['gates'].append(gate)
 
+                elif mutation == 2:
+                    #REMOVE EXISTING GATE
+                    gate = self.gate_bindings[random.choice([*self.gate_bindings])]
+                    #print('removing gate', gate)
+                    for i in self.gate_bindings:
+                        if gate.name in self.gate_bindings[i].inputs:
+                            #print('updating gate', self.gate_bindings[i])
+                            for x, a in enumerate(self.gate_bindings[i].inputs):
+                                if a == gate.name:
+                                    self.gate_bindings[i].inputs[x] = random.choice(gate.inputs)
+                            
+                            #print('updated gate', self.gate_bindings[i])
+                    
+                    for i in self.kwargs['outputs']:
+                        if i.input == gate.name:
+                            i.input = random.choice(gate.inputs)
+                            #print('updated output', i)
+
+                    del self.gate_bindings[gate.name]
+                    self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
         
     def traverse(self) -> None:
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
