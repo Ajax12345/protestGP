@@ -46,7 +46,6 @@ class node:
             self.name = name
             self.input = _input
             self.value = None
-            self.parent_path = None
 
         def set_value(self, value) -> None:
             self.value = self(value)
@@ -67,6 +66,7 @@ class node:
                 self.name = name
                 self.inputs = inputs
                 self.parents = []
+                self.layer = None
 
             def __call__(self, *inputs) -> typing.Any:
                 assert len(inputs) == len(self.inputs)
@@ -81,6 +81,7 @@ class node:
                 self.name = name
                 self.inputs = inputs
                 self.parents = []
+                self.layer = None
 
             def __call__(self, *inputs) -> typing.Any:
                 assert len(inputs) == len(self.inputs)
@@ -95,6 +96,7 @@ class node:
                 self.name = name
                 self.inputs = inputs
                 self.parents = []
+                self.layer = None
 
             def __call__(self, *inputs) -> typing.Any:
                 assert len(inputs) == len(self.inputs)
@@ -103,12 +105,29 @@ class node:
             def __repr__(self) -> str:
                 return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
 
+        class NOR:
+            INPUT_NUM = 2
+            def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
+                self.name = name
+                self.inputs = inputs
+                self.parents = []
+                self.layer = None
+
+            def __call__(self, *inputs) -> typing.Any:
+                assert len(inputs) == len(self.inputs)
+                return not any(inputs)
+        
+            def __repr__(self) -> str:
+                return f'node.operator.{self.__class__.__name__}({self.name}, inputs={self.inputs}, parents={self.parents})'
+
+
         class NOT:
             INPUT_NUM = 1
             def __init__(self, name:typing.Union[str, int], inputs:typing.List = []) -> None:
                 self.name = name
                 self.inputs = inputs
                 self.parents = []
+                self.layer = None
 
             def __call__(self, *inputs) -> typing.Any:
                 assert len(inputs) == len(self.inputs)
@@ -134,6 +153,7 @@ class Genotype:
         self.value_bindings = None
         for i in self.gate_bindings.values():
             i.parents = []
+            i.layer = None
 
         for i in self.kwargs['inputs']:
             i.value = None
@@ -147,7 +167,7 @@ class Genotype:
         self.traverse()
         return [self.value_bindings[i.input] for i in self.kwargs['outputs']]
 
-    def render(self) -> None:
+    def render(self, by_layer:bool = False) -> None:
         G, labels = nx.DiGraph(), {}
         for i in self.kwargs['inputs']:
             G.add_node(i.name, layer = 1)
@@ -164,7 +184,7 @@ class Genotype:
         while (queue:=[gate for gate in self.kwargs['gates'] if all(i in values for i in gate.inputs) and gate.name not in seen]):
             for gate in queue:
                 G.add_node(gate.name, layer = layer)
-                labels[gate.name] = f'{gate.__class__.__name__}({gate.name})'
+                labels[gate.name] = f'{gate.__class__.__name__}({gate.name},l={gate.layer})'
                 seen.append(gate.name)
                 values[gate.name] = gate(*[values[i] for i in gate.inputs])
                 for i in gate.inputs:
@@ -178,9 +198,12 @@ class Genotype:
             G.add_edge(i.input, i.name)
         
         write_dot(G, 'test.dot')
-        #pos = graphviz_layout(G, prog='dot')
-        #so^>v<dph8’
-        pos = nx.multipartite_layout(G, subset_key="layer")
+        if by_layer:
+            pos = nx.multipartite_layout(G, subset_key="layer")
+        
+        else:
+            pos = graphviz_layout(G, prog='dot')
+
         nx.draw(G, pos, labels = labels, with_labels = True, arrows = True, node_shape = 's')
         plt.show()
 
@@ -203,14 +226,48 @@ class Genotype:
 
     def mutate(self, prob:float = 0.1,
             gates = [node.operator.NAND, node.operator.AND, 
-                node.operator.OR, node.operator.NOT]) -> None:
+                node.operator.OR, node.operator.NOR]) -> None:
         """
         mutation options:
-            - add a new gate
-            - remove an existing gate
-            - change the origin of an existing input (rewire edge)
-            - update gate type
+            - add a new gate (1)
+            - remove an existing gate (2)
+            - change the origin of an existing input (rewire edge) (3)
+            - update gate type (4)
         """
+        #if random.random() >= 1 - prob:
+        if True:
+            with self:
+                if self.value_bindings is None:
+                    self.traverse()
+
+                if (mutation:=random.choice([1])) == 1:
+                    _gate = random.choice(gates)
+                    gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
+                    print('chosen gate', gate)
+                    parents, max_depth = set(), 1
+                    for i in gate.inputs:
+                        if i in self.gate_bindings:
+                            max_depth = max(max_depth, self.gate_bindings[i].layer)
+                            for j in self.gate_bindings[i].parents:
+                                parents.add(j)
+
+                        parents.add(i)
+
+                    #print('parents', parents)
+                    #print('max_depth', max_depth)
+
+                    if (child_options:=[self.gate_bindings[i] for i in {*self.value_bindings} - parents if i in self.gate_bindings and self.gate_bindings[i].layer > max_depth]):
+                        child = random.choice(child_options)
+                        child.inputs[random.choice(range(len(child.inputs)))] = gate.name
+                        #print('new child chosen', child)
+
+                    else:
+                        #print('rewiring output instead')
+                        output = random.choice(self.kwargs['outputs'])
+                        output.input = gate.name
+
+                    self.gate_bindings[gate.name] = gate
+                    self.kwargs['gates'].append(gate)
 
         
     def traverse(self) -> None:
@@ -218,7 +275,7 @@ class Genotype:
                 **{i.name:i.value for i in self.kwargs['constants']}}
         
         #print(values)
-        seen = []
+        seen, layer = [], 1
         while (queue:=[gate for gate in self.kwargs['gates'] if all(i in values for i in gate.inputs) and gate.name not in seen]):
             for gate in queue:
                 seen.append(gate.name)
@@ -228,6 +285,10 @@ class Genotype:
                         gate.parents = {*gate.parents, *self.gate_bindings[i].parents, i}
                     else:
                         gate.parents = {*gate.parents, i}
+
+                    gate.layer = layer
+            
+            layer += 1
             
         self.value_bindings = values
         #print(self.value_bindings)
@@ -263,5 +324,9 @@ if __name__ == '__main__':
         with g:
             assert g(*a[::-1]) == [b]  
     '''  
+    g.mutate()
+    g.mutate()
+    g.mutate()
+    print(g.complexity)
     g.render()
     
