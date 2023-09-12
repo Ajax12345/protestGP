@@ -410,6 +410,7 @@ if __name__ == '__main__':
     g.render()
     '''
     #g.render()
-    g = Genotype.random_genotype(9, 2, 8)
+    g = Genotype.random_genotype(9, 2, 2)
+    #print(g)
     g.render()
     

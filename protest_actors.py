@@ -29,6 +29,64 @@ class Actor:
         return f'{self.__class__.__name__}({self.traits})'
 
 
+def DEFAULT_GENOTYPE():
+    return Genotype(
+        inputs = [
+            node.Input(int, 0),
+            node.Input(int, 1),
+            node.Input(int, 2),
+            node.Input(int, 3),
+            node.Input(int, 4),
+            node.Input(int, 5),
+            node.Input(int, 6),
+            node.Input(int, 7),
+            node.Input(int, 8)
+        ],
+        constants = [
+            node.Constant(int, 9),
+            node.Constant(int, 10)
+        ],
+        gates = [
+            node.operator.OR(11, inputs=[9, 4]),
+            node.operator.OR(12, inputs=[0, 9]),
+            node.operator.NAND(13, inputs=[9, 3]),
+            node.operator.OR(14, inputs=[2, 1]),
+            node.operator.AND(15, inputs=[5, 5]),
+            node.operator.OR(16, inputs=[10, 4]),
+            node.operator.NOR(17, inputs=[5, 8]),
+            node.operator.OR(18, inputs=[3, 7]),
+            node.operator.NAND(19, inputs=[7, 7]),
+            node.operator.NOR(20, inputs=[0, 9]),
+            node.operator.OR(21, inputs=[16, 12]),
+            node.operator.NAND(22, inputs=[20, 5]),
+            node.operator.NAND(23, inputs=[14, 16]),
+            node.operator.OR(24, inputs=[11, 13]),
+            node.operator.OR(25, inputs=[2, 5]),
+            node.operator.NOR(26, inputs=[18, 3]),
+            node.operator.NAND(27, inputs=[12, 5]),
+            node.operator.OR(28, inputs=[10, 9]),
+            node.operator.NAND(29, inputs=[17, 19]),
+            node.operator.OR(30, inputs=[21, 27]),
+            node.operator.OR(31, inputs=[18, 29]),
+            node.operator.NOR(32, inputs=[28, 27]),
+            node.operator.AND(33, inputs=[21, 25]),
+            node.operator.NOR(34, inputs=[21, 16]),
+            node.operator.AND(35, inputs=[12, 25]),
+            node.operator.NAND(36, inputs=[14, 29]),
+            node.operator.NAND(37, inputs=[26, 24]),
+            node.operator.OR(38, inputs=[31, 8]),
+            node.operator.NOR(39, inputs=[37, 24]),
+            node.operator.NOR(40, inputs=[35, 34]),
+            node.operator.NOR(41, inputs=[34, 33]),
+            node.operator.NOR(42, inputs=[32, 32]),
+            node.operator.NOR(43, inputs=[35, 33]),
+            node.operator.NAND(44, inputs=[36, 31])
+        ],
+        outputs = [
+            node.Output(int, 45)
+        ]
+    )
+
 
 class Protestor(Actor):
     """
@@ -44,27 +102,7 @@ class Protestor(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        g = Genotype(
-            inputs = [
-                node.Input(int, 0),
-                node.Input(int, 1),
-                node.Input(int, 2)
-            ],
-            constants = [
-                node.Constant(int, 3, value = 0),
-                node.Constant(int, 4, value = 1)
-            ],
-            gates = [
-                node.operator.NAND(5, inputs = [0, 1]),
-                node.operator.NAND(6, inputs = [2, 3]),
-                node.operator.NAND(7, inputs = [5, 1]),
-                node.operator.NAND(8, inputs = [2, 4]),
-                node.operator.NAND(9, inputs = [7, 7]),
-                node.operator.NAND(10, inputs = [7, 8])
-            ],
-            outputs = [node.Output(int, 11, 10)]
-        )
-        return g
+        return Genotype.random_genotype(9, 2, 2)
     
 
 class Police(Actor):
@@ -81,7 +119,7 @@ class Police(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        pass
+        return Genotype.random_genotype(9, 2, 2)
 
 class CounterProtestor(Actor):
     """
@@ -97,7 +135,7 @@ class CounterProtestor(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        pass
+        return Genotype.random_genotype(9, 2, 2)
 
 
 class Public(Actor):
@@ -114,7 +152,7 @@ class Public(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        
+        return Genotype.random_genotype(9, 2, 2)
 
 
 class Environment:

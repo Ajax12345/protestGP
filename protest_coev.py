@@ -26,4 +26,4 @@ CounterProtestors.interaction(Police, None)
 
 
 if __name__ == '__main__':
-    env.graph()
+    print(Protestors.agent_details['population'][0].genotype)
