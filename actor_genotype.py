@@ -224,7 +224,7 @@ class Genotype:
 
         return len(parent_gates - {i.name for i in self.kwargs['constants']})
 
-    def mutate(self, prob:float = 0.1,
+    def mutate(self, prob:float = 0.5,
             gates = [node.operator.NAND, node.operator.AND, 
                 node.operator.OR, node.operator.NOR]) -> None:
         """

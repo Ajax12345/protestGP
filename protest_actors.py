@@ -1,4 +1,5 @@
 import random, typing
+import warnings
 
 class Actor:
     """
@@ -14,13 +15,13 @@ class Actor:
     persuasiveness
     agreeableness
     """
-    def __init__(self, traits:typing.List[int], genotype = None) -> None:
-        self.traits = traits
-        self.genotype = genotype if genotype is not None else None
+    def __init__(self) -> None:
+        self.traits = self.__class__.random_trait()
+        self.genotype = self.build_genotype()
 
     @classmethod
-    def random_actor(cls) -> 'Actor':
-        return cls([int(random.random() >= 1 - float(i.split(': ')[1])) for i in filter(None, cls.__doc__.split('\n')) if i.strip().lstrip()])
+    def random_trait(cls) -> typing.List[int]:
+        return [int(random.random() >= 1 - float(i.split(': ')[1])) for i in filter(None, cls.__doc__.split('\n')) if i.strip().lstrip()]
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.traits})'
@@ -39,6 +40,9 @@ class Protestor(Actor):
     persuasiveness: 0.6
     agreeableness: 0.3
     """
+
+    def build_genotype(self) -> typing.Any:
+        pass
     
 
 class Police(Actor):
@@ -54,7 +58,10 @@ class Police(Actor):
     agreeableness: 0.2
     """
 
-class CounterProtestors(Actor):
+    def build_genotype(self) -> typing.Any:
+        pass
+
+class CounterProtestor(Actor):
     """
     empathy: 0.4
     aggression: 0.7
@@ -66,6 +73,10 @@ class CounterProtestors(Actor):
     persuasiveness: 0.4
     agreeableness: 0.3
     """
+
+    def build_genotype(self) -> typing.Any:
+        pass
+
 
 class Public(Actor):
     """
@@ -79,6 +90,35 @@ class Public(Actor):
     persuasiveness: 0.5
     agreeableness: 0.5
     """
+
+    def build_genotype(self) -> typing.Any:
+        pass
+
+
+class Environment:
+    def __init__(self) -> None:
+        self.agents = {}
+        self.interactions = {}
+    
+    def agent(self, a_func:typing.Callable) -> typing.Any:
+        _env_self = self
+        class Agent:
+            def __init__(self, a_func) -> None:
+                self.name = a_func.__name__
+                self.agent_details = a_func()
+                self.interactions = []
+
+            def __call__(self, agent:'Agent', payoff_matrix) -> None:
+                self.interactions.append(agent)
+                _env_self.interactions[(self.name, agent.name)] = [self, agent, payoff_matrix]
+            
+            def __repr__(self) -> str:
+                return f'<agent "{self.name}" pop_size={len(self.agent_details["population"])}>'
+
+        agent = Agent(a_func)
+        self.agents[a_func.__name__] = agent
+
+        return agent
 
 if __name__ == '__main__':
     print(Public.random_actor())
