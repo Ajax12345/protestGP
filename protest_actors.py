@@ -1,5 +1,6 @@
 import random, typing
-import warnings
+import warnings, networkx as nx
+import matplotlib.pyplot as plt
 
 class Actor:
     """
@@ -99,8 +100,18 @@ class Environment:
     def __init__(self) -> None:
         self.agents = {}
         self.interactions = {}
+
+    def graph(self) -> None:
+        G = nx.Graph()
+        for a, b in self.interactions:
+            G.add_node(a)
+            G.add_node(b)
+            G.add_edge(a, b)
+        
+        nx.draw(G, with_labels = True, arrows = True)
+        plt.show()
     
-    def agent(self, a_func:typing.Callable) -> typing.Any:
+    def agent(self, a_func:typing.Callable) -> 'Agent':
         _env_self = self
         class Agent:
             def __init__(self, a_func) -> None:
@@ -108,7 +119,7 @@ class Environment:
                 self.agent_details = a_func()
                 self.interactions = []
 
-            def __call__(self, agent:'Agent', payoff_matrix) -> None:
+            def interaction(self, agent:'Agent', payoff_matrix) -> None:
                 self.interactions.append(agent)
                 _env_self.interactions[(self.name, agent.name)] = [self, agent, payoff_matrix]
             

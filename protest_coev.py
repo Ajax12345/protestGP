@@ -18,5 +18,12 @@ def CounterProtestors():
 def Public():
     return {'population': [pa.Public() for _ in range(1000)]}
 
+Protestors.interaction(Police, None)
+Protestors.interaction(Public, None)
+Protestors.interaction(CounterProtestors, None)
+Public.interaction(CounterProtestors, None)
+CounterProtestors.interaction(Police, None)
+
+
 if __name__ == '__main__':
-    print(Public)
+    env.graph()
