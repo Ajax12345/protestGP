@@ -1,6 +1,7 @@
 import random, typing
 import warnings, networkx as nx
 import matplotlib.pyplot as plt
+from actor_genotype import Genotype, node
 
 class Actor:
     """
@@ -43,7 +44,27 @@ class Protestor(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        pass
+        g = Genotype(
+            inputs = [
+                node.Input(int, 0),
+                node.Input(int, 1),
+                node.Input(int, 2)
+            ],
+            constants = [
+                node.Constant(int, 3, value = 0),
+                node.Constant(int, 4, value = 1)
+            ],
+            gates = [
+                node.operator.NAND(5, inputs = [0, 1]),
+                node.operator.NAND(6, inputs = [2, 3]),
+                node.operator.NAND(7, inputs = [5, 1]),
+                node.operator.NAND(8, inputs = [2, 4]),
+                node.operator.NAND(9, inputs = [7, 7]),
+                node.operator.NAND(10, inputs = [7, 8])
+            ],
+            outputs = [node.Output(int, 11, 10)]
+        )
+        return g
     
 
 class Police(Actor):
@@ -93,7 +114,7 @@ class Public(Actor):
     """
 
     def build_genotype(self) -> typing.Any:
-        pass
+        
 
 
 class Environment:

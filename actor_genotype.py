@@ -1,7 +1,7 @@
 import random, typing, json
 import collections, networkx as nx
 from networkx.drawing.nx_agraph import write_dot, graphviz_layout
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, itertools
 
 class node:
     class Input:
@@ -341,6 +341,35 @@ class Genotype:
             
         self.value_bindings = values
         #print(self.value_bindings)
+
+    @classmethod
+    def random_genotype(cls, inputs:int, constants:int, depth:int) -> 'Genotype':
+        I = itertools.count(0)
+        inp = [node.Input(int, next(I)) for _ in range(inputs)]
+        constants = [node.Constant(int, next(I), value = 0) for _ in range(constants)]
+        all_nodes = [i.name for i in inp] + [i.name for i in constants]
+        gates = []
+        last_level = all_nodes
+        for j in range(depth):
+            level_gates = []
+            for _ in range(len(last_level) - 1):
+                _gate = random.choice([node.operator.NAND, node.operator.AND, 
+                    node.operator.OR, node.operator.NOR])
+                _inputs = [random.choice(last_level) if random.random() >= 0.5 - j*0.5/depth else random.choice(all_nodes) for _ in range(2)]
+                level_gates.append(_gate(next(I), inputs = _inputs))
+            
+            if j:
+                all_nodes.extend(last_level)
+            
+            last_level = [i.name for i in level_gates]
+            gates.extend(level_gates)
+        
+        return cls(
+            inputs = inp,
+            constants = constants,
+            gates = gates,
+            outputs = [node.Output(int, next(I), random.choice(last_level))]
+        )
         
     def __repr__(self) -> str:
         return json.dumps({a:[*map(repr, b)] for a, b in self.kwargs.items()}, indent=4)
@@ -372,10 +401,15 @@ if __name__ == '__main__':
     for a, b in [([0, 0, 0], False), ([0, 0, 1], False), ([0, 1, 0], True), ([0, 1, 1], False), ([1, 0, 0], True), ([1, 0, 1], True), ([1, 1, 0], True), ([1, 1, 1], True)]:
         with g:
             assert g(*a[::-1]) == [b]  
-    '''  
+    ''' 
+    ''' 
     g.mutate()
     g.mutate()
     g.mutate()
     print(g.complexity)
+    g.render()
+    '''
+    #g.render()
+    g = Genotype.random_genotype(9, 2, 8)
     g.render()
     
