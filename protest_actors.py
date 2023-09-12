@@ -20,6 +20,7 @@ class Actor:
     def __init__(self) -> None:
         self.traits = self.__class__.random_trait()
         self.genotype = self.build_genotype()
+        self.score = 0
 
     @classmethod
     def random_trait(cls) -> typing.List[int]:
