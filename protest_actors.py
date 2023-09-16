@@ -2,6 +2,7 @@ import random, typing
 import warnings, networkx as nx
 import matplotlib.pyplot as plt
 from actor_genotype import Genotype, node
+import statistics, collections, numpy as np
 
 class Actor:
     """
@@ -21,6 +22,14 @@ class Actor:
         self.traits = self.__class__.random_trait()
         self.genotype = self.build_genotype()
         self.score = 0
+
+    def reset(self) -> 'Actor':
+        self.genotype = self.build_genotype()
+        self.score = 0
+        return self
+
+    def mutate(self, prob:float = 0.5) -> None:
+        self.genotype.mutate(prob)
 
     @classmethod
     def random_trait(cls) -> typing.List[int]:
@@ -160,6 +169,63 @@ class Environment:
     def __init__(self) -> None:
         self.agents = {}
         self.interactions = {}
+        self.generation = 1
+        self.generation_complexities = {}
+
+
+    def run_interactions(self) -> None:
+        print('-'*40)
+        for (a1, a2), [agent1, agent2, matrix] in self.interactions.items():
+            for actor1 in agent1.population:
+                for actor2 in agent2.population:
+                    [a1_decision] = actor1.genotype(*actor2.traits)
+                    [a2_decision] = actor2.genotype(*actor1.traits)
+                    a1_payout, a2_payout = matrix[a1_decision][a2_decision]
+                    actor1.score += a1_payout
+                    actor2.score += a2_payout
+                    #print('score after', [actor1.score, actor2.score])
+
+    def increment_generation(self) -> None:
+        self.generation += 1
+
+    def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
+        self.generation_complexities[self.generation] = {a:c_func(sorted([i.score for i in b.population])) for a, b in self.agents.items()}
+
+    def reproduction(self) -> None:
+        for a_name, agent in self.agents.items():
+            sum_fitness = sum(i.score for i in agent.population)
+            #fitness_probability = [i.score/sum_fitness for i in agent.population]
+            print([i.score for i in agent.population])
+            population_fitness = sorted([(i.score/sum_fitness, i) for i in agent.population], key=lambda x:x[0])
+            c_prob = [(sum(a for a, _ in population_fitness[:i])+fitness, agent) for i, (fitness, agent) in enumerate(population_fitness)]
+            new_population = []
+            for _ in range(agent.size):
+                r = random.random()
+                for i in range(1, agent.size):
+                    if c_prob[i-1][0] < r < c_prob[i][0]:
+                        parent = c_prob[i][1]
+                        parent.mutate()
+                        parent.score = 0
+                        new_population.append(parent)
+                        break
+
+            agent.population = new_population
+                
+    def plot_complexities(self) -> None:
+        agent_complexities = collections.defaultdict(list)
+        all_generations = []
+        for generation, agents in self.generation_complexities.items():
+            all_generations.append(generation)
+            for agent, complexity in agents.items():
+                agent_complexities[agent].append(complexity)
+            
+        for agent, complexities in agent_complexities.items():
+            plt.plot(all_generations, complexities, label = agent)
+        
+        plt.xlabel('Generation')
+        plt.ylabel('Median complexity')
+        plt.legend()
+        plt.show()
 
     def graph(self) -> None:
         G = nx.Graph()
@@ -170,6 +236,18 @@ class Environment:
         
         nx.draw(G, with_labels = True, arrows = True)
         plt.show()
+
+    def __enter__(self) -> 'Environment':
+        return self
+    
+    def __exit__(self, *_) -> None:
+        self.interactions = {}
+        self.generation = 1
+        for agent in self.agents.values():
+            agent.population = [i.reset() for i in agent.population]
+            agent.interactions = []
+
+        return
     
     def agent(self, a_func:typing.Callable) -> 'Agent':
         _env_self = self
@@ -179,17 +257,32 @@ class Environment:
                 self.agent_details = a_func()
                 self.interactions = []
 
+            @property
+            def population(self) -> typing.List['Actor']:
+                return self.agent_details['population']
+
+            @population.setter
+            def population(self, new_population:typing.List['Actor']) -> None:
+                self.agent_details['population'] = new_population
+
+            @property
+            def size(self) -> int:
+                return self.agent_details['size']
+
+            def __iter__(self) -> typing.Iterator:
+                yield from self.population
+
             def interaction(self, agent:'Agent', payoff_matrix) -> None:
                 self.interactions.append(agent)
                 _env_self.interactions[(self.name, agent.name)] = [self, agent, payoff_matrix]
+                _env_self.agents[self.name] = self
+                _env_self.agents[agent.name] = agent
+                 
             
             def __repr__(self) -> str:
                 return f'<agent "{self.name}" pop_size={len(self.agent_details["population"])}>'
 
-        agent = Agent(a_func)
-        self.agents[a_func.__name__] = agent
-
-        return agent
+        return Agent(a_func)
 
 if __name__ == '__main__':
     print(Public.random_actor())

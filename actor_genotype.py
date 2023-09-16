@@ -235,7 +235,7 @@ class Genotype:
             - update gate type (4)
         """
         if random.random() >= 1 - prob:
-            print('mutating!!!')
+            #print('mutating!!!')
             with self:
                 if self.value_bindings is None:
                     self.traverse()
@@ -244,7 +244,7 @@ class Genotype:
   
                 if (mutation:=random.choice(choices)) == 1:
                     #ADD NEW GATE
-                    print('ADDING NEW GATE')
+                    #print('ADDING NEW GATE')
                     _gate = random.choice(gates)
                     gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
                     #print('chosen gate', gate)
@@ -275,7 +275,7 @@ class Genotype:
 
                 elif mutation == 2:
                     #REMOVE EXISTING GATE
-                    print('REMOVING EXISTING GATE')
+                    #print('REMOVING EXISTING GATE')
                     gate = self.gate_bindings[random.choice([*self.gate_bindings])]
                     #print('removing gate', gate)
                     for i in self.gate_bindings:
@@ -297,7 +297,7 @@ class Genotype:
         
                 elif mutation == 3:
                     #REWIRING EDGES
-                    print("REWIRING EDGES")
+                    #print("REWIRING EDGES")
                     for i in self.gate_bindings:
                         parents = [j.name for j in self.kwargs['inputs']] + \
                             [j.name for j in self.kwargs['constants']] + \
@@ -311,7 +311,7 @@ class Genotype:
 
                 elif mutation == 4:
                     #UPDATE GATE TYPE
-                    print('UPDATING GATE TYPE')
+                    #print('UPDATING GATE TYPE')
                     gate = self.gate_bindings[random.choice([*self.gate_bindings])]
                     new_gate = random.choice([i for i in gates if not isinstance(gate, i)])(gate.name, inputs = gate.inputs)
                     #print('gate to be updated', gate, new_gate.__class__.__name__)
