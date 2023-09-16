@@ -29,8 +29,8 @@ CounterProtestors.interaction(Police, [[(0, 0), (-1, 1)], [(1, -1), (2, 2)]])
 
 if __name__ == '__main__':
     #print(Protestors.agent_details['population'][0].genotype)
-    for _ in range(10):
-        print('iteraction #', _)
+    for i in range(10):
+        print(f'iteraction #{i+1}')
         env.run_interactions()
         env.compute_complexities()
         env.reproduction()

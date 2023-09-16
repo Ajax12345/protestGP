@@ -194,22 +194,8 @@ class Environment:
     def reproduction(self) -> None:
         for a_name, agent in self.agents.items():
             sum_fitness = sum(i.score for i in agent.population)
-            #fitness_probability = [i.score/sum_fitness for i in agent.population]
-            print([i.score for i in agent.population])
-            population_fitness = sorted([(i.score/sum_fitness, i) for i in agent.population], key=lambda x:x[0])
-            c_prob = [(sum(a for a, _ in population_fitness[:i])+fitness, agent) for i, (fitness, agent) in enumerate(population_fitness)]
-            new_population = []
-            for _ in range(agent.size):
-                r = random.random()
-                for i in range(1, agent.size):
-                    if c_prob[i-1][0] < r < c_prob[i][0]:
-                        parent = c_prob[i][1]
-                        parent.mutate()
-                        parent.score = 0
-                        new_population.append(parent)
-                        break
-
-            agent.population = new_population
+            fitness_probability = [i.score/sum_fitness for i in agent.population]
+            agent.population = [agent.population[np.random.choice(agent.size, p = fitness_probability)] for _ in range(agent.size)]
                 
     def plot_complexities(self) -> None:
         agent_complexities = collections.defaultdict(list)
