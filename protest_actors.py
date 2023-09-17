@@ -1,8 +1,9 @@
-import random, typing
+import random, typing, copy
 import warnings, networkx as nx
 import matplotlib.pyplot as plt
 from actor_genotype import Genotype, node
 import statistics, collections, numpy as np
+import json
 
 class Actor:
     """
@@ -28,8 +29,11 @@ class Actor:
         self.score = 0
         return self
 
-    def mutate(self, prob:float = 0.5) -> None:
+    def mutate(self, prob:float = 1) -> None:
         self.genotype.mutate(prob)
+
+    def complexity(self) -> int:
+        return self.genotype.complexity
 
     @classmethod
     def random_trait(cls) -> typing.List[int]:
@@ -188,17 +192,33 @@ class Environment:
     def increment_generation(self) -> None:
         self.generation += 1
 
-    def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
-        self.generation_complexities[self.generation] = {a:c_func(sorted([i.score for i in b.population])) for a, b in self.agents.items()}
+    def compute_complexities(self, c_func:typing.Callable = statistics.mean) -> None:
+        self.generation_complexities[self.generation] = {a:c_func(sorted([i.complexity() for i in b.population])) for a, b in self.agents.items()}
 
     def reproduction(self) -> None:
         for a_name, agent in self.agents.items():
             sum_fitness = sum(i.score for i in agent.population)
+            if not sum_fitness:
+                return 0, a_name
+
+            #print(a_name, [i.score for i in agent.population])
             fitness_probability = [i.score/sum_fitness for i in agent.population]
-            agent.population = [agent.population[np.random.choice(agent.size, p = fitness_probability)] for _ in range(agent.size)]
+            new_population = []
+            for _ in range(agent.size):
+                parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
+                parent.mutate()
+                parent.score = 0
+                new_population.append(parent)
+
+            agent.population = new_population
+
+        return 1, None
                 
     def plot_complexities(self) -> None:
         agent_complexities = collections.defaultdict(list)
+        with open('run_complexities.json', 'w') as f:
+            json.dump(self.generation_complexities, f)
+            
         all_generations = []
         for generation, agents in self.generation_complexities.items():
             all_generations.append(generation)
@@ -209,7 +229,7 @@ class Environment:
             plt.plot(all_generations, complexities, label = agent)
         
         plt.xlabel('Generation')
-        plt.ylabel('Median complexity')
+        plt.ylabel('Mean complexity')
         plt.legend()
         plt.show()
 
