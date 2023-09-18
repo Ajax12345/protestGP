@@ -26,9 +26,8 @@ CounterProtestors.interaction(Police, [[(0, 0), (0, 2)], [(2, 0), (2, 2)]])
 
 
 
-if __name__ == '__main__':
-    
-    for i in range(1000):
+def simulate_generation(gen_num:int) -> bool:
+    for i in range(gen_num[1]):
         print(f'generation #{i+1}')
         env.run_interactions()
         env.compute_complexities()
@@ -38,4 +37,12 @@ if __name__ == '__main__':
 
         env.increment_generation()
     
-    env.plot_complexities()
+    env.plot_complexities(gen_num[0], suppress_plot = True)
+
+    return True
+
+if __name__ == '__main__':
+    import concurrent.futures
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers = 5) as executor:
+        _ = executor.map(simulate_generation, [(i, 1000) for i in range(5)])

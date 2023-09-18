@@ -3,7 +3,7 @@ import warnings, networkx as nx
 import matplotlib.pyplot as plt
 from actor_genotype import Genotype, node
 import statistics, collections, numpy as np
-import json
+import json, datetime
 
 class Actor:
     """
@@ -214,13 +214,13 @@ class Environment:
 
         return 1, None
                 
-    def plot_complexities(self, cached:bool = False) -> None:
+    def plot_complexities(self, proc:int, cached:bool = False, suppress_plot:bool = False) -> None:
         if cached:
             with open('run_complexities.json') as f:
                 self.generation_complexities = json.load(f)
 
         else:
-            with open('run_complexities.json', 'w') as f:
+            with open(f"run_complexities_{proc}_{str(datetime.datetime.now()).replace(' ', 'T').replace('.', '')}.json", 'a') as f:
                 json.dump(self.generation_complexities, f)
 
         agent_complexities = collections.defaultdict(list)
@@ -230,13 +230,15 @@ class Environment:
             for agent, complexity in agents.items():
                 agent_complexities[agent].append(complexity)
             
-        for agent, complexities in agent_complexities.items():
-            plt.plot(all_generations, complexities, label = agent)
-        
-        plt.xlabel('Generation')
-        plt.ylabel('Mean complexity')
-        plt.legend()
-        plt.show()
+
+        if not suppress_plot:
+            for agent, complexities in agent_complexities.items():
+                plt.plot(all_generations, complexities, label = agent)
+            
+            plt.xlabel('Generation')
+            plt.ylabel('Mean complexity')
+            plt.legend()
+            plt.show()
 
     def graph(self) -> None:
         G = nx.Graph()
@@ -296,4 +298,4 @@ class Environment:
         return Agent(a_func)
 
 if __name__ == '__main__':
-    print(Public.random_actor())
+    print(Public.random_trait())
