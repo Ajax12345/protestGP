@@ -192,7 +192,7 @@ class Environment:
     def increment_generation(self) -> None:
         self.generation += 1
 
-    def compute_complexities(self, c_func:typing.Callable = statistics.mean) -> None:
+    def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
         self.generation_complexities[self.generation] = {a:c_func(sorted([i.complexity() for i in b.population])) for a, b in self.agents.items()}
 
     def reproduction(self) -> None:
@@ -214,11 +214,16 @@ class Environment:
 
         return 1, None
                 
-    def plot_complexities(self) -> None:
+    def plot_complexities(self, cached:bool = False) -> None:
+        if cached:
+            with open('run_complexities.json') as f:
+                self.generation_complexities = json.load(f)
+
+        else:
+            with open('run_complexities.json', 'w') as f:
+                json.dump(self.generation_complexities, f)
+
         agent_complexities = collections.defaultdict(list)
-        with open('run_complexities.json', 'w') as f:
-            json.dump(self.generation_complexities, f)
-            
         all_generations = []
         for generation, agents in self.generation_complexities.items():
             all_generations.append(generation)

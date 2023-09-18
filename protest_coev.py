@@ -27,8 +27,8 @@ CounterProtestors.interaction(Police, [[(0, 0), (0, 2)], [(2, 0), (2, 2)]])
 
 
 if __name__ == '__main__':
-    #print(Protestors.agent_details['population'][0].genotype)
-    for i in range(100):
+    
+    for i in range(1000):
         print(f'generation #{i+1}')
         env.run_interactions()
         env.compute_complexities()
@@ -37,5 +37,5 @@ if __name__ == '__main__':
             break
 
         env.increment_generation()
-
+    
     env.plot_complexities()
