@@ -28,5 +28,5 @@ def plot_main_complexities(folder = 'complexity_graphs'):
     plt.show()
 
 if __name__ == '__main__':
-    plot_main_complexities()
-    plot_main_complexities('control_graphs')
+    plot_main_complexities('complexity_100_graphs')
+    #plot_main_complexities('control_graphs')

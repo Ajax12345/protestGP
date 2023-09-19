@@ -42,10 +42,10 @@ def simulate_generation(gen_num:int, control:bool) -> bool:
     return True
 
 if __name__ == '__main__':
-    _ = simulate_generation((1, 1000), True)
-    '''
+    #_ = simulate_generation((1, 1000), True)
+    
     import concurrent.futures
 
     with concurrent.futures.ProcessPoolExecutor(max_workers = 5) as executor:
         _ = executor.map(simulate_generation, [(i, 1000) for i in range(5)])
-    '''
+    
