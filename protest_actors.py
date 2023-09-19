@@ -110,7 +110,7 @@ class Protestor(Actor):
     leadership: 0.7
     honesty: 0.5
     resilience: 0.8
-    assertivness: 0.8
+    assertiveness: 0.8
     persuasiveness: 0.6
     agreeableness: 0.3
     """
@@ -127,7 +127,7 @@ class Police(Actor):
     leadership: 0.6
     honesty: 0.5
     resilience: 0.8
-    assertivness: 0.9
+    assertiveness: 0.9
     persuasiveness: 0.6
     agreeableness: 0.2
     """
@@ -143,7 +143,7 @@ class CounterProtestor(Actor):
     leadership: 0.4
     honesty: 0.4
     resilience: 0.6
-    assertivness: 0.7
+    assertiveness: 0.7
     persuasiveness: 0.4
     agreeableness: 0.3
     """
@@ -160,7 +160,7 @@ class Public(Actor):
     leadership: 0.5
     honesty: 0.5
     resilience: 0.5
-    assertivness: 0.5
+    assertiveness: 0.5
     persuasiveness: 0.5
     agreeableness: 0.5
     """
@@ -195,7 +195,7 @@ class Environment:
     def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
         self.generation_complexities[self.generation] = {a:c_func(sorted([i.complexity() for i in b.population])) for a, b in self.agents.items()}
 
-    def reproduction(self) -> None:
+    def reproduction(self, control:bool = False) -> None:
         for a_name, agent in self.agents.items():
             sum_fitness = sum(i.score for i in agent.population)
             if not sum_fitness:
@@ -205,7 +205,11 @@ class Environment:
             fitness_probability = [i.score/sum_fitness for i in agent.population]
             new_population = []
             for _ in range(agent.size):
-                parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
+                if not control:
+                    parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
+                else:
+                    parent = copy.deepcopy(random.choice(agent.population))
+
                 parent.mutate()
                 parent.score = 0
                 new_population.append(parent)
@@ -236,7 +240,7 @@ class Environment:
                 plt.plot(all_generations, complexities, label = agent)
             
             plt.xlabel('Generation')
-            plt.ylabel('Mean complexity')
+            plt.ylabel('Median complexity')
             plt.legend()
             plt.show()
 
@@ -298,4 +302,7 @@ class Environment:
         return Agent(a_func)
 
 if __name__ == '__main__':
-    print(Public.random_trait())
+    print('Protestor random trait', Protestor.random_trait())
+    print('Police random trait', Police.random_trait())
+    print('CounterProtestor random trait', CounterProtestor.random_trait())
+    print('Public random trait', Public.random_trait())
