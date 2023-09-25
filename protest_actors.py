@@ -22,6 +22,7 @@ class Actor:
     def __init__(self) -> None:
         self.traits = self.__class__.random_trait()
         self.genotype = self.build_genotype()
+        self._outputs = {}
         self.score = 0
 
     def reset(self) -> 'Actor':
@@ -187,10 +188,15 @@ class Environment:
                 for actor2 in agent2.population:
                     [a1_decision] = actor1.genotype(*actor2.traits)
                     [a2_decision] = actor2.genotype(*actor1.traits)
+                    actor1._outputs[tuple(actor2.traits)] = a1_decision
+                    actor2._outputs[tuple(actor1.traits)] = a2_decision
                     a1_payout, a2_payout = matrix[a1_decision][a2_decision]
                     actor1.score += a1_payout
                     actor2.score += a2_payout
                     #print('score after', [actor1.score, actor2.score])
+
+        for a_name, agent in self.agents.items():
+            print(a_name, {len(i._outputs) for i in agent.population})
 
     def increment_generation(self) -> None:
         self.generation += 1
