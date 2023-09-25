@@ -30,7 +30,10 @@ class Actor:
         return self
 
     def mutate(self, prob:float = 1) -> None:
-        self.genotype.mutate(prob)
+        if random.random() >= 1 - prob:
+            ind = random.choice([*range(len(self.traits))])
+            self.traits[ind] = int(not self.traits[ind])
+            self.genotype.mutate()
 
     def complexity(self) -> int:
         return self.genotype.complexity

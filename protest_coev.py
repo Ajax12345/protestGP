@@ -4,19 +4,19 @@ env = pa.Environment()
 
 @env.agent
 def Protestors():
-    return {'population': [pa.Protestor() for _ in range(50)], 'size':50}
+    return {'population': [pa.Protestor() for _ in range(100)], 'size':100}
 
 @env.agent
 def Police():
-    return {'population': [pa.Police() for _ in range(50)], 'size':50}
+    return {'population': [pa.Police() for _ in range(100)], 'size':100}
 
 @env.agent
 def CounterProtestors():
-    return {'population': [pa.CounterProtestor() for _ in range(50)], 'size':50}
+    return {'population': [pa.CounterProtestor() for _ in range(100)], 'size':100}
 
 @env.agent
 def Public():
-    return {'population': [pa.Public() for _ in range(50)], 'size':50}
+    return {'population': [pa.Public() for _ in range(100)], 'size':100}
 
 Protestors.interaction(Police, [[(2, 2), (0, 3)], [(3, 0), (0, 0)]])
 Protestors.interaction(Public, [[(0, 1), (0, 3)], [(1, 0), (2, 2)]])
@@ -42,10 +42,11 @@ def simulate_generation(gen_num:int, control:bool) -> bool:
     return True
 
 if __name__ == '__main__':
-    #_ = simulate_generation((1, 1000), True)
-    
+    _ = simulate_generation((1, 1000), False)
+    '''
     import concurrent.futures
 
     with concurrent.futures.ProcessPoolExecutor(max_workers = 5) as executor:
         _ = executor.map(simulate_generation, [(i, 1000) for i in range(5)])
+    '''
     

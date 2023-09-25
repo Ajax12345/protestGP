@@ -234,90 +234,90 @@ class Genotype:
             - change the origin of an existing input (rewire edge) (3)
             - update gate type (4)
         """
-        if random.random() >= 1 - prob:
+        #if random.random() >= 1 - prob:
             #print('mutating!!!')
-            with self:
-                if self.value_bindings is None:
-                    self.traverse()
+        with self:
+            if self.value_bindings is None:
+                self.traverse()
 
-                choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
-  
-                if (mutation:=random.choice(choices)) == 1:
-                    #ADD NEW GATE
-                    #print('ADDING NEW GATE')
-                    _gate = random.choice(gates)
-                    gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
-                    #print('chosen gate', gate)
-                    parents, max_depth = set(), 1
-                    for i in gate.inputs:
-                        if i in self.gate_bindings:
-                            max_depth = max(max_depth, self.gate_bindings[i].layer)
-                            for j in self.gate_bindings[i].parents:
-                                parents.add(j)
+            choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
 
-                        parents.add(i)
+            if (mutation:=random.choice(choices)) == 1:
+                #ADD NEW GATE
+                #print('ADDING NEW GATE')
+                _gate = random.choice(gates)
+                gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
+                #print('chosen gate', gate)
+                parents, max_depth = set(), 1
+                for i in gate.inputs:
+                    if i in self.gate_bindings:
+                        max_depth = max(max_depth, self.gate_bindings[i].layer)
+                        for j in self.gate_bindings[i].parents:
+                            parents.add(j)
 
-                    #print('parents', parents)
-                    #print('max_depth', max_depth)
+                    parents.add(i)
 
-                    if (child_options:=[self.gate_bindings[i] for i in {*self.value_bindings} - parents if i in self.gate_bindings and self.gate_bindings[i].layer > max_depth]):
-                        child = random.choice(child_options)
-                        child.inputs[random.choice(range(len(child.inputs)))] = gate.name
-                        #print('new child chosen', child)
+                #print('parents', parents)
+                #print('max_depth', max_depth)
 
-                    else:
-                        #print('rewiring output instead')
-                        output = random.choice(self.kwargs['outputs'])
-                        output.input = gate.name
+                if (child_options:=[self.gate_bindings[i] for i in {*self.value_bindings} - parents if i in self.gate_bindings and self.gate_bindings[i].layer > max_depth]):
+                    child = random.choice(child_options)
+                    child.inputs[random.choice(range(len(child.inputs)))] = gate.name
+                    #print('new child chosen', child)
 
-                    self.gate_bindings[gate.name] = gate
-                    self.kwargs['gates'].append(gate)
+                else:
+                    #print('rewiring output instead')
+                    output = random.choice(self.kwargs['outputs'])
+                    output.input = gate.name
 
-                elif mutation == 2:
-                    #REMOVE EXISTING GATE
-                    #print('REMOVING EXISTING GATE')
-                    gate = self.gate_bindings[random.choice([*self.gate_bindings])]
-                    #print('removing gate', gate)
-                    for i in self.gate_bindings:
-                        if gate.name in self.gate_bindings[i].inputs:
-                            #print('updating gate', self.gate_bindings[i])
-                            for x, a in enumerate(self.gate_bindings[i].inputs):
-                                if a == gate.name:
-                                    self.gate_bindings[i].inputs[x] = random.choice(gate.inputs)
-                            
-                            #print('updated gate', self.gate_bindings[i])
-                    
-                    for i in self.kwargs['outputs']:
-                        if i.input == gate.name:
-                            i.input = random.choice(gate.inputs)
-                            #print('updated output', i)
+                self.gate_bindings[gate.name] = gate
+                self.kwargs['gates'].append(gate)
 
-                    del self.gate_bindings[gate.name]
-                    self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
-        
-                elif mutation == 3:
-                    #REWIRING EDGES
-                    #print("REWIRING EDGES")
-                    for i in self.gate_bindings:
-                        parents = [j.name for j in self.kwargs['inputs']] + \
-                            [j.name for j in self.kwargs['constants']] + \
-                            [self.gate_bindings[j].name for j in self.gate_bindings if self.gate_bindings[j].layer < self.gate_bindings[i].layer]
-                        
+            elif mutation == 2:
+                #REMOVE EXISTING GATE
+                #print('REMOVING EXISTING GATE')
+                gate = self.gate_bindings[random.choice([*self.gate_bindings])]
+                #print('removing gate', gate)
+                for i in self.gate_bindings:
+                    if gate.name in self.gate_bindings[i].inputs:
+                        #print('updating gate', self.gate_bindings[i])
                         for x, a in enumerate(self.gate_bindings[i].inputs):
-                            if random.random() >= 1 - 0.1:
-                                #print('mutating gate connection', self.gate_bindings[i])
-                                self.gate_bindings[i].inputs[x] = random.choice(parents)
-                                #print('after rewiring', self.gate_bindings[i])
+                            if a == gate.name:
+                                self.gate_bindings[i].inputs[x] = random.choice(gate.inputs)
+                        
+                        #print('updated gate', self.gate_bindings[i])
+                
+                for i in self.kwargs['outputs']:
+                    if i.input == gate.name:
+                        i.input = random.choice(gate.inputs)
+                        #print('updated output', i)
 
-                elif mutation == 4:
-                    #UPDATE GATE TYPE
-                    #print('UPDATING GATE TYPE')
-                    gate = self.gate_bindings[random.choice([*self.gate_bindings])]
-                    new_gate = random.choice([i for i in gates if not isinstance(gate, i)])(gate.name, inputs = gate.inputs)
-                    #print('gate to be updated', gate, new_gate.__class__.__name__)
-                    self.gate_bindings[gate.name] = new_gate
-                    self.kwargs['gates'] = [i if i.name != new_gate.name else new_gate for i in self.kwargs['gates']]
+                del self.gate_bindings[gate.name]
+                self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
+    
+            elif mutation == 3:
+                #REWIRING EDGES
+                #print("REWIRING EDGES")
+                for i in self.gate_bindings:
+                    parents = [j.name for j in self.kwargs['inputs']] + \
+                        [j.name for j in self.kwargs['constants']] + \
+                        [self.gate_bindings[j].name for j in self.gate_bindings if self.gate_bindings[j].layer < self.gate_bindings[i].layer]
                     
+                    for x, a in enumerate(self.gate_bindings[i].inputs):
+                        if random.random() >= 1 - 0.1:
+                            #print('mutating gate connection', self.gate_bindings[i])
+                            self.gate_bindings[i].inputs[x] = random.choice(parents)
+                            #print('after rewiring', self.gate_bindings[i])
+
+            elif mutation == 4:
+                #UPDATE GATE TYPE
+                #print('UPDATING GATE TYPE')
+                gate = self.gate_bindings[random.choice([*self.gate_bindings])]
+                new_gate = random.choice([i for i in gates if not isinstance(gate, i)])(gate.name, inputs = gate.inputs)
+                #print('gate to be updated', gate, new_gate.__class__.__name__)
+                self.gate_bindings[gate.name] = new_gate
+                self.kwargs['gates'] = [i if i.name != new_gate.name else new_gate for i in self.kwargs['gates']]
+                
 
     def traverse(self) -> None:
         values = {**{i.name:i.value for i in self.kwargs['inputs']}, 
