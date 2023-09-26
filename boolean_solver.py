@@ -342,17 +342,23 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                 while queue:
                     rule_groups, bindings, used_groups = queue.pop(0)
                     if not rule_groups:
-                        print('success!', rule, result, bindings)
+                        if isinstance(result, (entities.Zero, entities.One)):
+                            return [a for i, a in enumerate(new_expr) if i not in used_groups]+[result.toList()]
+
                         return [a for i, a in enumerate(new_expr) if i not in used_groups] + [bindings[i] for i in result.toList()]
                     
                     (subrule, (group_ind, group)), *rule_groups = rule_groups
-                    for chunk_group in (chunk_groups(group, len(subrule)) if len(subrule) > 1 else [group]):
+                    for chunk_group in (chunk_groups(group, len(subrule)) if len(subrule) > 1 else [[group]]):
                         new_bindings = copy.deepcopy(bindings)
                         failed = False
                         for rule_name, chosen_subgroup in zip(subrule, chunk_group):
-                            if isinstance(rule_name, int) and (len(chosen_subgroup) != 1 or rule_name != chosen_subgroup[0]):
-                                failed = True
-                                break
+                            if isinstance(rule_name, int):
+                                if len(chosen_subgroup) != 1 or rule_name != chosen_subgroup[0]:
+                                    failed = True
+                                    break
+                                
+                                if rule_name == chosen_subgroup[0]:
+                                    continue
 
                             s_c = sorted(chosen_subgroup)
                             if rule_name in new_bindings and new_bindings[rule_name] != s_c:
@@ -368,7 +374,7 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                                 new_bindings[rule_name] = s_c
 
                             if len(s_c) == 1:
-                                new_bindings[r_n] = [(int(not chosen_subgroup[0][0]), chosen_subgroup[0][1])]
+                                new_bindings[r_n] = [(int(not chosen_subgroup[0][0]), chosen_subgroup[0][1])] if isinstance(s_c[0], tuple) else int(not s_c[0])
 
                         if failed:
                             continue
@@ -414,7 +420,7 @@ if __name__ == '__main__':
     '''
     #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
     #b = M(1).AND(M(1)).AND(M(1)).AND(M(2)).AND(M(2)).OR(M(1).AND(M(1)).AND(M(1)).AND(M(2)))
-    b = M(1).AND(M(2)).OR(M(1).AND(M(2)))
+    b = M(1).AND(M(2)).OR(One())
     print(b, reduce_expression(b))
 
 
