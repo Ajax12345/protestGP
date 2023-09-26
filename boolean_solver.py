@@ -217,8 +217,11 @@ class entities:
 
         def toList(self, level = 0) -> list:
             if not level:
-                return [str(self)]
+                return [self.toTuple()]
             
+            return self.toTuple()
+
+        def toTuple(self) -> tuple:
             return (self._not, self._id)
 
         def AND(self, _m) -> typing.Any:
@@ -293,10 +296,11 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
     if as_obj:
         new_expr = new_expr.toList()
 
-    print(new_expr)
+    #print(new_expr)
     for rule, result in RULES:
         rule = rule.toList()
         if len(rule) <= len(new_expr):
+            rule = sorted(rule, key=len)
             for groups in itertools.permutations([*enumerate(new_expr)], len(rule)):
                 if len(rule) == 1:
                     ((group_ind, group),) = groups
@@ -305,10 +309,11 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                         subrules, group, bindings = queue.pop(0)
                         if not subrules:
                             if isinstance(result, (entities.Zero, entities.One)):
-                                new_expr[group_ind] = group+[result]
+                                new_expr[group_ind] = group+result.toList()
 
                             else:
-                                new_expr[group_ind] = group+[bindings[result.toList(1)]]
+                                #print('in here result', result.toList(), result.toList(1), bindings)
+                                new_expr[group_ind] = group+[bindings[i] for i in result.toList()]
                             
                             return reduce_expression(new_expr, False)
                         
@@ -328,12 +333,50 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                             
                             bindings = copy.deepcopy(bindings)
                             bindings[subrule] = a
-                            bindings[(int(not subrule[0]), subrule[1])] = (int(not a[0]), a[1])
+                            bindings[(int(not subrule[0]), subrule[1])] = (int(not a[0]), a[1]) if isinstance(a, tuple) else int(not a)
                             queue.append((subrules, group[:i]+group[i+1:], bindings))
-                            
-
-
+                        
                     continue
+
+                queue = [([*zip(rule, groups)], {}, [])]
+                while queue:
+                    rule_groups, bindings, used_groups = queue.pop(0)
+                    if not rule_groups:
+                        print('success!', rule, result, bindings)
+                        return [a for i, a in enumerate(new_expr) if i not in used_groups] + [bindings[i] for i in result.toList()]
+                    
+                    (subrule, (group_ind, group)), *rule_groups = rule_groups
+                    for chunk_group in (chunk_groups(group, len(subrule)) if len(subrule) > 1 else [group]):
+                        new_bindings = copy.deepcopy(bindings)
+                        failed = False
+                        for rule_name, chosen_subgroup in zip(subrule, chunk_group):
+                            if isinstance(rule_name, int) and (len(chosen_subgroup) != 1 or rule_name != chosen_subgroup[0]):
+                                failed = True
+                                break
+
+                            s_c = sorted(chosen_subgroup)
+                            if rule_name in new_bindings and new_bindings[rule_name] != s_c:
+                                failed = True
+                                break
+                            
+                            r_n = (int(not rule_name[0]), rule_name[1])
+                            if r_n in new_bindings and (len(chosen_subgroup) != 1 or new_bindings[r_n] != [(int(not chosen_subgroup[0][0]), chosen_subgroup[0][1])]):
+                                failed = True
+                                break
+                            
+                            if rule_name not in new_bindings:
+                                new_bindings[rule_name] = s_c
+
+                            if len(s_c) == 1:
+                                new_bindings[r_n] = [(int(not chosen_subgroup[0][0]), chosen_subgroup[0][1])]
+
+                        if failed:
+                            continue
+
+                        queue.append((rule_groups, new_bindings, used_groups + [group_ind]))
+                        
+
+
 
                 '''
                 queue = collections.deque([(sorted([*zip(rule, groups)], key=lambda x:len(x)), {})])
@@ -370,7 +413,8 @@ if __name__ == '__main__':
     print(a.toString(), a1.toString())
     '''
     #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
-    b = M(1).AND(M(1).NOT()).AND(M(1))
+    #b = M(1).AND(M(1)).AND(M(1)).AND(M(2)).AND(M(2)).OR(M(1).AND(M(1)).AND(M(1)).AND(M(2)))
+    b = M(1).AND(M(2)).OR(M(1).AND(M(2)))
     print(b, reduce_expression(b))
 
 
