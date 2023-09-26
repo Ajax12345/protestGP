@@ -345,6 +345,9 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                         if isinstance(result, (entities.Zero, entities.One)):
                             return [a for i, a in enumerate(new_expr) if i not in used_groups]+[result.toList()]
 
+                        if isinstance(result, operators.OR):
+                            return [a for i, a in enumerate(new_expr) if i not in used_groups] + [[k for j in i for k in bindings[j]] for i in result.toList()]
+                        
                         return [a for i, a in enumerate(new_expr) if i not in used_groups] + [bindings[i] for i in result.toList()]
                     
                     (subrule, (group_ind, group)), *rule_groups = rule_groups
@@ -420,7 +423,7 @@ if __name__ == '__main__':
     '''
     #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
     #b = M(1).AND(M(1)).AND(M(1)).AND(M(2)).AND(M(2)).OR(M(1).AND(M(1)).AND(M(1)).AND(M(2)))
-    b = M(1).AND(M(2)).OR(One())
+    b = M(1).AND(M(2).NOT()).OR(M(2))
     print(b, reduce_expression(b))
 
 
