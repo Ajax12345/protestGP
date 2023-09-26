@@ -17,8 +17,19 @@ class operators:
 
             return _m.AND(self)
 
+        def NAND(self, _m) -> typing.Any:
+            a, b = self.NOT(), _m.NOT()
+            return a.OR(b)
+
+        def NOR(self, _m) -> typing.Any:
+            a, b = self.NOT(), _m.NOT()
+            return a.AND(b)
+
         def OR(self, _m) -> typing.Any:
             return operators.OR(self, _m)
+
+        def NOT(self) -> typing.Any:
+            return operators.OR(*[i.NOT() for i in self.container])
 
         def __repr__(self) -> str:
             return '('+' * '.join(map(str, self.container))+')'
@@ -41,7 +52,33 @@ class operators:
             return operators.OR(*result)
         
         def OR(self, _m) -> typing.Any:
-            return operators.OR(*self.container, _m)
+            results = [*self.container]
+            if isinstance(_m, self.__class__):
+                results.extend(_m.container)
+            
+            else:
+                results.append(_m)
+
+            return operators.OR(*results)
+
+        def NAND(self, _m) -> typing.Any:
+            a, b = self.NOT(), _m.NOT()
+            return a.OR(b)
+
+        def NOR(self, _m) -> typing.Any:
+            a, b = self.NOT(), _m.NOT()
+            return a.AND(b)
+
+        def NOT(self) -> typing.Any:
+            result = None
+            for i in self.container:
+                v = i.NOT()
+                if result is None:
+                    result = v
+                else:
+                    result = result.AND(v)
+                
+            return result
 
         def __repr__(self) -> str:
             return '('+' + '.join(map(str, self.container))+')'
@@ -52,7 +89,7 @@ class operators:
 class entities:
     class One:
         def __repr__(self) -> str:
-            return '<1>'
+            return '1'
 
         def __getattr__(self, _f_name) -> typing.Callable:
             def wrapper(_m:'M') -> 'operator':
@@ -65,6 +102,20 @@ class entities:
                 return operators.AND(self, _m)
 
             return _m.AND(self)
+
+        def NAND(self, _m) -> typing.Any:
+            if isinstance(_m, self.__class__):
+                return operators.OR(self.NOT(), _m.NOT())
+            
+            a = _m.NOT()
+            return a.OR(_m.NOT())
+
+        def NOR(self, _m) -> typing.Any:
+            if isinstance(_m, self.__class__):
+                return operators.AND(self.NOT(), _m.NOT())
+
+            a = _m.NOT()
+            return a.AND(_m.NOT())
 
         def OR(self, _m) -> typing.Any:
             if isinstance(_m, self.__class__):
@@ -80,7 +131,7 @@ class entities:
 
     class Zero:
         def __repr__(self) -> str:
-            return '<0>'
+            return '0'
 
         def __getattr__(self, _f_name) -> typing.Callable:
             def wrapper(_m:'M') -> 'operator':
@@ -107,15 +158,21 @@ class entities:
             return entities.One()
 
     class M:
-        def __init__(self, _id:typing.Any) -> None:
+        def __init__(self, _id:typing.Any, _not = False) -> None:
             self._id = _id
-            self._not = False
+            self._not = _not
 
         def AND(self, _m) -> typing.Any:
             if isinstance(_m, self.__class__):
                 return operators.AND(self, _m)
 
             return _m.AND(self)
+
+        def NAND(self, _m) -> typing.Any:
+            if isinstance(_m, self.__class__):
+                return operators.OR(self.NOT(), _m.NOT())
+            
+            return _m.NAND(self)
 
         def OR(self, _m) -> typing.Any:
             if isinstance(_m, self.__class__):
@@ -124,8 +181,7 @@ class entities:
             return _m.OR(self)
 
         def NOT(self) -> 'M':
-            self._not = not self._not
-            return self
+            return entities.M(self._id, not self._not)
 
         def __str__(self) -> str:
             return repr(self)
@@ -135,11 +191,14 @@ class entities:
 
 if __name__ == '__main__':
     M = entities.M
-    a = M(1).OR(M(2)).OR(M(3)).OR(M(4))
-    b = M(5).OR(M(6)).OR(M(7)).OR(M(8))
-    print(a, b)
-    print(a.AND(b))    
-
+    
+    b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
+    c = M(10).AND(M(11))
+    print(b, ', ', c)
+    print(b.NOT(), ', ', c.NOT())
+    print(b.NOR(c))
+    
+    
     
     
 
