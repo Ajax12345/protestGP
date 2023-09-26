@@ -9,6 +9,12 @@ class operators:
         def __init__(self, *args) -> None:
             self.container = [*args]
 
+        def toList(self, level = 0) -> list:
+            if not level:
+                return [[i.toList(level + 1) for i in self.container]]
+            
+            return [i.toList(level + 1) for i in self.container]
+
         def AND(self, _m) -> typing.Any:
             if _m.__class__.__name__ not in operators.OPS:
                 return operators.AND(*self.container, _m)
@@ -44,6 +50,9 @@ class operators:
     class OR:
         def __init__(self, *args) -> None:
             self.container = [*args]
+
+        def toList(self, level = 0) -> list:
+            return [[K] if not isinstance(K:=i.toList(level + 1), list) else K for i in self.container]
 
         def AND(self, _m) -> typing.Any:
             result = []
@@ -103,6 +112,12 @@ class entities:
         def __repr__(self) -> str:
             return '<1>'
 
+        def toList(self, level = 0) -> list:
+            if not level:
+                return [1]
+            
+            return 1
+
         def __getattr__(self, _f_name) -> typing.Callable:
             def wrapper(_m:'M') -> 'operator':
                 return getattr(entities, _f_name)(self, _m)
@@ -147,6 +162,12 @@ class entities:
     class Zero:
         def __repr__(self) -> str:
             return '<0>'
+
+        def toList(self, level = 0) -> list:
+            if not level:
+                return [0]
+            
+            return 0
 
         def __getattr__(self, _f_name) -> typing.Callable:
             def wrapper(_m:'M') -> 'operator':
@@ -194,6 +215,12 @@ class entities:
             self._id = _id
             self._not = _not
 
+        def toList(self, level = 0) -> list:
+            if not level:
+                return [str(self)]
+            
+            return (self._not, self._id)
+
         def AND(self, _m) -> typing.Any:
             if _m.__class__.__name__ in entities.ENTITIES:
                 return operators.AND(self, _m)
@@ -235,19 +262,19 @@ One = entities.One
 Zero = entities.Zero
 
 RULES = [
-    #(M(1).AND(Zero()), Zero()),
-    #(M(1).AND(One()), M(1)),
-    #(M(1).AND(M(1)), M(1)),
-    #(M(1).AND(M(1).NOT()), Zero()),
+    (M(1).AND(Zero()), Zero()),
+    (M(1).AND(One()), M(1)),
+    (M(1).AND(M(1)), M(1)),
+    (M(1).AND(M(1).NOT()), Zero()),
 
-    #(M(1).OR(One()), One()),
-    #(M(1).OR(Zero()), M(1)),
-    #(M(1).OR(M(1)), M(1)),
-    #(M(1).OR(M(1).NOT()), One()),
+    (M(1).OR(One()), One()),
+    (M(1).OR(Zero()), M(1)),
+    (M(1).OR(M(1)), M(1)),
+    (M(1).OR(M(1).NOT()), One()),
 
     (M(1).OR(M(1).AND(M(2))), M(1)),
-    #(M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
-    #(M(1).AND(M(2).NOT()).OR(M(2)), M(1).OR(M(2)))
+    (M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
+    (M(1).AND(M(2).NOT()).OR(M(2)), M(1).OR(M(2)))
 ]
 
 def chunk_groups(l, groups, g = []):
@@ -262,78 +289,64 @@ def chunk_groups(l, groups, g = []):
             if g:
                 yield from chunk_groups(l[:i]+l[i+1:], groups, g[:-1]+[g[-1]+[a]])
 
-def reduce_expression(expr) -> 'operator':
-    reduced = False
+def reduce_expression(new_expr, as_obj = True) -> 'operator':
+    if as_obj:
+        new_expr = new_expr.toList()
+
+    print(new_expr)
     for rule, result in RULES:
-        if not isinstance(rule, expr.__class__):
-            if hasattr(expr, 'container'):
-                for i in expr.container:
-                    if i.__class__.__name__ in operators.OPS and reduce_expression(i):
-                        reduced = True
-            continue
-        
-        if len(rule.container) <= len(expr.container):
-            for groups in itertools.permutations(expr.container, len(rule.container)):
-                
-                queue = collections.deque([(sorted([*zip(rule.container, groups)], key=lambda x:len(getattr(x, 'container', [0]))), {})])
-                print(queue)
+        rule = rule.toList()
+        if len(rule) <= len(new_expr):
+            for groups in itertools.permutations([*enumerate(new_expr)], len(rule)):
+                if len(rule) == 1:
+                    ((group_ind, group),) = groups
+                    queue = [(rule[0], group, {})]
+                    while queue:
+                        subrules, group, bindings = queue.pop(0)
+                        if not subrules:
+                            if isinstance(result, (entities.Zero, entities.One)):
+                                new_expr[group_ind] = group+[result]
+
+                            else:
+                                new_expr[group_ind] = group+[bindings[result.toList(1)]]
+                            
+                            return reduce_expression(new_expr, False)
+                        
+                        subrule, *subrules = subrules
+                        for i, a in enumerate(group):
+                            if isinstance(subrule, int):
+                                if a == subrule:
+                                    queue.append((subrules, group[:i]+group[i+1:], bindings))
+
+                                continue
+                            
+                            if subrule in bindings:
+                                if bindings[subrule] == a:
+                                    queue.append((subrules, group[:i]+group[i+1:], bindings))
+
+                                continue
+                            
+                            bindings = copy.deepcopy(bindings)
+                            bindings[subrule] = a
+                            bindings[(int(not subrule[0]), subrule[1])] = (int(not a[0]), a[1])
+                            queue.append((subrules, group[:i]+group[i+1:], bindings))
+                            
+
+
+                    continue
+
+                '''
+                queue = collections.deque([(sorted([*zip(rule, groups)], key=lambda x:len(x)), {})])
                 while queue:
                     pairings, bindings = queue.popleft()
-                    if not pairings:
-                        print('halting in here')
-                        print(pairings, bindings, rule, result)
-                        return True
-
-                    a, b = pairings.pop(0)
-                    bindings = {a:b for a, b in bindings.items()}
-                    if not hasattr(a, 'container'):
-                        a1, a2 = a.toString(), a.NOT().toString()
-                        if a1 in bindings and bindings[a1].toString() != b.toString():
-                            continue
-                        
-                        if a2 in bindings and bindings[a2].toString() != b.NOT().toString():
-                            continue
-                        
-                        bindings[a1] = b
-                        bindings[a2] = b.NOT()
-                    
-                        queue.append((pairings, bindings))
+                    subrule, target = pairings.pop(0)
+                    if len(subrule) == 1 and isinstance(subrule[0], int) and subrule == target:
+                        queue.append(([*pairings], bindings))
                         continue
-
-                    to_produce, to_match = [], []
-                    if hasattr(b, 'container'):
-                        to_match = [*b.container]
+                '''
                     
-                    else:
-                        to_match = [b]
+    return new_expr
 
-                    if a.__class__.__name__ in ['One', 'Zero']:
-                        if len(to_match) == 1 and a.toString() == to_match[0].toString():
-                            queue.append(([*pairings], bindings))
-
-                        continue
-
-                    for j in a.container:
-                        j1, j2 = j.toString(), j.NOT().toString()
-                        if j1 in bindings:
-                            to_match = [i for i in to_match if i not in bindings[j1].container]
-                        
-                        elif j2 in bindings:
-                            to_match = [i for i in to_match if i not in bindings[j2].container]
-
-                        else:
-                            to_produce.append(j)
-
-                    if len(to_produce) <= len(to_match):
-                        for chunk in chunk_groups(to_match, len(to_produce)):
-                            bindings = {a:b for a, b in bindings.items()}
-                            for a, b in zip(to_produce, chunk):
-                                a1, a2 = a.toString(), a.NOT().toString()
-                                n_sub = operators.AND(*b)
-                                bindings[a1] = n_sub
-                                bindings[a2] = n_sub.NOT()
-                        
-                            queue.append(([*pairings], bindings))
 
 
                 
@@ -356,8 +369,9 @@ if __name__ == '__main__':
     a1 = M(3).OR(M(2)).OR(M(1))
     print(a.toString(), a1.toString())
     '''
-    a = M(1).OR(M(1).AND(M(2)))
-    _ = reduce_expression(a)
+    #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
+    b = M(1).AND(M(1).NOT()).AND(M(1))
+    print(b, reduce_expression(b))
 
 
     
