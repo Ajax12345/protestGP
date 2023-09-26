@@ -214,6 +214,27 @@ class entities:
         def __repr__(self) -> str:
             return ['', 'not '][self._not] + str(self._id)
 
+M = entities.M
+One = entities.One
+Zero = entities.Zero
+
+RULES = [
+    (M(1).AND(Zero()), Zero()),
+    (M(1).AND(One()), M(1)),
+    (M(1).AND(M(1)), M(1)),
+    (M(1).AND(M(1).NOT()), Zero()),
+
+    (M(1).OR(One()), One()),
+    (M(1).OR(Zero()), M(1)),
+    (M(1).OR(M(1)), M(1)),
+    (M(1).OR(M(1).NOT()), One()),
+
+    (M(1).OR(M(1).AND(M(2))), M(1)),
+    (M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
+    (M(1).AND(M(2).NOT()).OR(M(2)), M(1).OR(M(2)))
+
+]
+
 if __name__ == '__main__':
     M = entities.M
     One = entities.One
