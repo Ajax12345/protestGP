@@ -1,4 +1,5 @@
 import collections, typing, copy
+import itertools
 
 class operators:
     OPS = [
@@ -33,6 +34,9 @@ class operators:
 
         def __repr__(self) -> str:
             return '('+' * '.join(map(str, self.container))+')'
+
+        def toString(self) -> str:
+            return '('+' * '.join(sorted([i.toString() for i in self.container]))+')'
         
         def __str__(self) -> str:
             return repr(self)
@@ -82,6 +86,9 @@ class operators:
 
         def __repr__(self) -> str:
             return '('+' + '.join(map(str, self.container))+')'
+
+        def toString(self) -> str:
+            return '('+' + '.join(sorted([i.toString() for i in self.container]))+')'
         
         def __str__(self) -> str:
             return repr(self)
@@ -134,6 +141,9 @@ class entities:
         def NOT(self) -> 'Zero':
             return entities.Zero()
 
+        def toString(self) -> str:
+            return str(self)
+
     class Zero:
         def __repr__(self) -> str:
             return '0'
@@ -176,6 +186,9 @@ class entities:
         def NOT(self) -> 'One':
             return entities.One()
 
+        def toString(self) -> str:
+            return str(self)
+
     class M:
         def __init__(self, _id:typing.Any, _not = False) -> None:
             self._id = _id
@@ -208,6 +221,9 @@ class entities:
         def NOT(self) -> 'M':
             return entities.M(self._id, not self._not)
 
+        def toString(self) -> str:
+            return str(self)
+
         def __str__(self) -> str:
             return repr(self)
 
@@ -232,8 +248,75 @@ RULES = [
     (M(1).OR(M(1).AND(M(2))), M(1)),
     (M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
     (M(1).AND(M(2).NOT()).OR(M(2)), M(1).OR(M(2)))
-
 ]
+
+def reduce_expression(expr) -> 'operator':
+    reduced = False
+    for rule, result in RULES:
+        if not isinstance(rule, expr.__class__):
+            if hasattr(expr, 'container'):
+                for i in expr.container:
+                    if reduce_expression(i):
+                        reduced = True
+            continue
+        
+        if len(rule.container) <= len(expr.container):
+            for groups in itertools.permutations(expr.container, len(rule.container)):
+                d = collections.defaultdict(list)
+                for a, b in zip(rule.container, groups):
+                    d[len(getattr(a, 'container', [1]))].append((copy.deepcopy(a), copy.deepcopy(b)))
+
+                
+                queue = collections.deque([({}, dict(d))])
+                while queue:
+                    name_bindings, runs = queue.popleft()
+                    failed = False
+                    for a, b in runs.pop(min(runs)):
+                        b = copy.deepcopy(b)
+                        if not hasattr(a, 'container'):
+                            a1_name = a.toString()
+                            if a1_name in name_bindings and all(j in b.container for j in name_bindings[a1_name]):
+                                failed = True
+                                break
+
+                            a1_name = a.NOT().toString()
+                            if a1_name in name_bindings and all(j in b.container for j in name_bindings[a1_name]):
+                                failed = True
+                                break
+
+                            name_bindings[a.toString()] = b
+                            name_bindings[a.NOT().toString()] = b.NOT()
+                            continue
+                        
+                        if not hasattr(b, 'container'):
+                            failed = True
+                            break
+                        
+                        for_removal = []
+                        for i in a.container:
+                            if i.toString() in name_bindings:
+                                b.container = [j for j in b.container if j not in name_bindings[i.toString()]]
+                            
+                            elif i.NOT().toString() in name_bindings:
+                                b.container = [j for j in b.container if j not in name_bindings[i.NOT().toString()]]
+                            
+                            else:
+                                for_removal.append(i)
+                            
+                        if not for_removal and b.container:
+                            failed = True
+                            break
+
+                        
+
+
+
+                
+                
+
+
+
+
 
 if __name__ == '__main__':
     M = entities.M
@@ -250,8 +333,8 @@ if __name__ == '__main__':
     print(b.NOR(c))
     '''
     a = M(1).OR(M(2)).OR(M(3))
-    b = M(4).OR(M(5)).OR(M(6))
-    print(a, b, a.NOR(b))
+    a1 = M(3).OR(M(2)).OR(M(1))
+    print(a.toString(), a1.toString())
 
 
     
