@@ -343,12 +343,12 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                     rule_groups, bindings, used_groups = queue.pop(0)
                     if not rule_groups:
                         if isinstance(result, (entities.Zero, entities.One)):
-                            return [a for i, a in enumerate(new_expr) if i not in used_groups]+[result.toList()]
+                            return reduce_expression([a for i, a in enumerate(new_expr) if i not in used_groups]+[result.toList()], False)
 
                         if isinstance(result, operators.OR):
-                            return [a for i, a in enumerate(new_expr) if i not in used_groups] + [[k for j in i for k in bindings[j]] for i in result.toList()]
+                            return reduce_expression([a for i, a in enumerate(new_expr) if i not in used_groups] + [[k for j in i for k in bindings[j]] for i in result.toList()], False)
                         
-                        return [a for i, a in enumerate(new_expr) if i not in used_groups] + [bindings[i] for i in result.toList()]
+                        return reduce_expression([a for i, a in enumerate(new_expr) if i not in used_groups] + [bindings[i] for i in result.toList()], False)
                     
                     (subrule, (group_ind, group)), *rule_groups = rule_groups
                     for chunk_group in (chunk_groups(group, len(subrule)) if len(subrule) > 1 else [[group]]):
@@ -423,10 +423,32 @@ if __name__ == '__main__':
     '''
     #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
     #b = M(1).AND(M(1)).AND(M(1)).AND(M(2)).AND(M(2)).OR(M(1).AND(M(1)).AND(M(1)).AND(M(2)))
-    b = M(1).AND(M(2).NOT()).OR(M(2))
-    print(b, reduce_expression(b))
-
-
+    #b = M(1).AND(M(3)).AND(M(2).NOT()).OR(M(2))
+    #print(b, reduce_expression(b))
+    #b = M(1).AND(M(2)).AND(M(3))
+    #print(b, b.NOT().AND(M(4)))
+    tests = [
+        M(1).OR(Zero()),
+        M(1).NOT().AND(Zero()),
+        M(1).OR(M(1).NOT()),
+        M(1).OR(M(1)),
+        M(1).OR(M(1).AND(M(2))),
+        M(1).OR(M(1).NOT().AND(M(2))),
+        (M(1).NOT().OR(M(2))).AND(M(1)),
+        M(1).AND(M(2)).OR(M(1).NOT().AND(M(2))),
+        (M(1).NOT().OR(M(2).NOT())).AND(M(1).NOT().OR(M(2))),
+        M(1).OR(M(1).AND(M(1).NOT())),
+        M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())),
+        M(1).NOT().OR(M(2).AND(M(1).NOT())),
+        M(1).NOT().NOR(M(1).NOT()),
+        M(1).NOR(M(1).NOT()),
+        M(1).OR(M(1).AND(M(2).NOT()).AND(M(3)).AND(M(4))),
+        M(1).NOT().AND((M(1).AND(M(2)).AND(M(3)).AND(M(4))).NOT()),
+    ]
+    
+    for i, a in enumerate(tests, 1):
+        print(f'#{i}', reduce_expression(a)) 
+        print('-'*40)
     
     
     
