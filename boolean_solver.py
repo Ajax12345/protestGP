@@ -319,22 +319,22 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                         
                         subrule, *subrules = subrules
                         for i, a in enumerate(group):
+                            new_bindings = copy.deepcopy(bindings)
                             if isinstance(subrule, int):
                                 if a == subrule:
-                                    queue.append((subrules, group[:i]+group[i+1:], bindings))
+                                    queue.append((subrules, group[:i]+group[i+1:], new_bindings))
 
                                 continue
                             
-                            if subrule in bindings:
-                                if bindings[subrule] == a:
-                                    queue.append((subrules, group[:i]+group[i+1:], bindings))
+                            if subrule in new_bindings:
+                                if new_bindings[subrule] == a:
+                                    queue.append((subrules, group[:i]+group[i+1:], new_bindings))
 
                                 continue
                             
-                            bindings = copy.deepcopy(bindings)
-                            bindings[subrule] = a
-                            bindings[(int(not subrule[0]), subrule[1])] = (int(not a[0]), a[1]) if isinstance(a, tuple) else int(not a)
-                            queue.append((subrules, group[:i]+group[i+1:], bindings))
+                            new_bindings[subrule] = a
+                            new_bindings[(int(not subrule[0]), subrule[1])] = (int(not a[0]), a[1]) if isinstance(a, tuple) else int(not a)
+                            queue.append((subrules, group[:i]+group[i+1:], new_bindings))
                         
                     continue
 
@@ -444,13 +444,13 @@ if __name__ == '__main__':
         M(1).NOR(M(1).NOT()),
         M(1).OR(M(1).AND(M(2).NOT()).AND(M(3)).AND(M(4))),
         M(1).NOT().AND((M(1).AND(M(2)).AND(M(3)).AND(M(4))).NOT()),
+        (M(1).OR(M(2).NOT()).OR(M(3).NOT())).AND(M(1).OR(M(2).NOT()).OR(M(3))).AND(M(1).OR(M(2)).OR(M(3).NOT()))
     ]
-    
+    #(A + B’ + C’)(A + B’ + C)(A + B + C’)
     for i, a in enumerate(tests, 1):
         print(f'#{i}', reduce_expression(a)) 
         print('-'*40)
-    
-    
+   
     
     
 
