@@ -33,6 +33,9 @@ class operators:
             return a.AND(b)
 
         def OR(self, _m) -> typing.Any:
+            if isinstance(_m, operators.OR):
+                return _m.OR(self)
+
             return operators.OR(self, _m)
 
         def NOT(self) -> typing.Any:
@@ -296,7 +299,6 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
     if as_obj:
         new_expr = new_expr.toList()
 
-    #print(new_expr)
     for rule, result in RULES:
         rule = rule.toList()
         if len(rule) <= len(new_expr):
@@ -383,22 +385,8 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                             continue
 
                         queue.append((rule_groups, new_bindings, used_groups + [group_ind]))
-                        
-
-
-
-                '''
-                queue = collections.deque([(sorted([*zip(rule, groups)], key=lambda x:len(x)), {})])
-                while queue:
-                    pairings, bindings = queue.popleft()
-                    subrule, target = pairings.pop(0)
-                    if len(subrule) == 1 and isinstance(subrule[0], int) and subrule == target:
-                        queue.append(([*pairings], bindings))
-                        continue
-                '''
                     
     return new_expr
-
 
 
                 
@@ -427,6 +415,7 @@ if __name__ == '__main__':
     #print(b, reduce_expression(b))
     #b = M(1).AND(M(2)).AND(M(3))
     #print(b, b.NOT().AND(M(4)))
+    
     tests = [
         M(1).OR(Zero()),
         M(1).NOT().AND(Zero()),
@@ -444,12 +433,19 @@ if __name__ == '__main__':
         M(1).NOR(M(1).NOT()),
         M(1).OR(M(1).AND(M(2).NOT()).AND(M(3)).AND(M(4))),
         M(1).NOT().AND((M(1).AND(M(2)).AND(M(3)).AND(M(4))).NOT()),
-        (M(1).OR(M(2).NOT()).OR(M(3).NOT())).AND(M(1).OR(M(2).NOT()).OR(M(3))).AND(M(1).OR(M(2)).OR(M(3).NOT()))
+        (M(1).OR(M(2).NOT()).OR(M(3).NOT())).AND(M(1).OR(M(2).NOT()).OR(M(3))).AND(M(1).OR(M(2)).OR(M(3).NOT())),
+        ((M(1).AND(M(2).NOT())).AND(M(3).OR(M(2).AND(M(4)))).OR(M(1).NOT().AND(M(2).NOT()))).AND(M(3)),
+        (M(1).AND(M(2))).OR(M(1).AND(M(2).OR(M(3)))).OR(M(2).AND(M(2).OR(M(3))))
     ]
+    
     #(A + B’ + C’)(A + B’ + C)(A + B + C’)
+    #(AB’(C+BD) + A’B’)C
+    #XY + X(Y+Z) + Y(Y+Z)
+
     for i, a in enumerate(tests, 1):
         print(f'#{i}', reduce_expression(a)) 
         print('-'*40)
+
    
     
     
