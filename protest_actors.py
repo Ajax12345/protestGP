@@ -5,6 +5,18 @@ from actor_genotype import Genotype, node
 import statistics, collections, numpy as np
 import json, datetime
 
+TRAITS = [
+    'empathy',
+    'aggression',
+    'narcissism',
+    'leadership',
+    'honesty',
+    'resilience',
+    'assertiveness',
+    'persuasiveness',
+    'agreeableness'
+]
+
 class Actor:
     """
     Traits derived in part from https://www.annualreviews.org/doi/pdf/10.1146/annurev-polisci-051010-111659
@@ -27,6 +39,7 @@ class Actor:
 
     def reset(self) -> 'Actor':
         self.genotype = self.build_genotype()
+        self._outputs = {}
         self.score = 0
         return self
 
@@ -194,9 +207,6 @@ class Environment:
                     actor1.score += a1_payout
                     actor2.score += a2_payout
                     #print('score after', [actor1.score, actor2.score])
-
-        for a_name, agent in self.agents.items():
-            print(a_name, {len(i._outputs) for i in agent.population})
 
     def increment_generation(self) -> None:
         self.generation += 1

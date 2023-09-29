@@ -410,7 +410,20 @@ if __name__ == '__main__':
     g.render()
     '''
     #g.render()
-    g = Genotype.random_genotype(9, 2, 2)
+    import itertools
+    g = Genotype.random_genotype(9, 3, 6)
     #print(g)
-    g.render()
+    '''
+    from sympy.logic import POSform
+    from sympy import symbols
+
+    minterms = []
+    for t in itertools.product(*[[0,1] for _ in range(9)]):
+        with g:
+            if g(*t)[0]:minterms.append([*t])
+
+    print(POSform([*symbols('a:9')], minterms, []))
+    '''
+    g.traverse()
+    #g.render()
     

@@ -282,6 +282,22 @@ RULES = [
     (M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
     (M(1).AND(M(2).NOT()).OR(M(2)), M(1).OR(M(2)))
 ]
+RULE_TRUNC = {
+    'AND':[
+        (M(1).AND(Zero()), Zero()),
+        (M(1).AND(One()), M(1)),
+        (M(1).AND(M(1).NOT()), Zero()),
+    ],
+    'OR':[
+        (M(1).OR(One()), One()),
+        (M(1).OR(Zero()), M(1)),
+        #(M(1).OR(M(1)), M(1)),
+        #(M(1).OR(M(1).NOT()), One()),
+        (M(1).OR(M(1).AND(M(2))), M(1)),
+        #(M(2).OR(M(1).AND(M(2).NOT()), M(1).OR(M(2)))
+        #(M(1).AND(M(2)).OR(M(1).AND(M(2).NOT())), M(1)),
+    ]
+}
 
 def chunk_groups(l, groups, g = []):
     if not l and not groups:
@@ -295,8 +311,55 @@ def chunk_groups(l, groups, g = []):
             if g:
                 yield from chunk_groups(l[:i]+l[i+1:], groups, g[:-1]+[g[-1]+[a]])
 
-def reduce_expression(new_expr, as_obj = True) -> 'operator':
-    if as_obj:
+def reduce_expression_trunc(new_expr) -> 'operator':
+    print('new expr here', new_expr)
+    def not_t(t):
+        return (not t[0], t[1])
+
+    if not isinstance(new_expr, list):
+        new_expr = new_expr.toList()
+
+    new_expr = [{*i} for i in new_expr]
+    for and_expr in new_expr:
+        if len(and_expr) < 2:
+            continue
+
+        for rule, result in RULE_TRUNC['AND']:
+            [[a, b]] = rule.toList()
+            for c_a in and_expr:
+                if isinstance(c_a, tuple):
+                    bindings = {a:c_a, not_t(a):int(not c_a) if isinstance(c_a, int) else not_t(c_a)}
+                    if (c_b:=bindings.get(b, b)) in and_expr:
+                        #print(bindings, and_expr, c_a, c_b)
+                        and_expr.remove(c_a)
+                        and_expr.remove(c_b)
+                        and_expr.add(bindings.get(result.toList(1), result.toList(1)))
+                        return reduce_expression_trunc(new_expr)
+    
+    for rule, result in RULE_TRUNC['OR']:
+        #print('rule', rule.toList())
+        print('rule, result', rule, result)
+        [[a], b] = sorted(rule.toList(), key=len)
+        for i, c_a in enumerate(new_expr):
+            bindings = {a:c_a}
+            for j, c_b in enumerate(new_expr):
+                if i != j:
+                    if len(b) == 1 and isinstance(b[0], int):
+                        if len(c_b) == 1 and isinstance(c_b_val:=[*c_b][0], int) and b[0] == c_b_val:
+                            new_expr = [s for I, s in enumerate(new_expr) if I not in [j, i]] + [bindings.get(k, [k]) for k in result.toList()]
+                            return reduce_expression_trunc(new_expr)
+                        
+                        continue
+
+                    if not (c_a - c_b):
+                        new_expr = [s for I, s in enumerate(new_expr) if I not in [j, i]] + [bindings.get(k, [k]) for k in result.toList()]
+                        return reduce_expression_trunc(new_expr)
+
+    return new_expr
+
+
+def reduce_expression(new_expr) -> 'operator':
+    if not isinstance(new_expr, list):
         new_expr = new_expr.toList()
 
     for rule, result in RULES:
@@ -388,33 +451,25 @@ def reduce_expression(new_expr, as_obj = True) -> 'operator':
                     
     return new_expr
 
+def ListToObj(inp:typing.List[list]) -> typing.Any:
+    or_container = []
+    for i in inp:
+        and_cont = []
+        for j in i:
+            if isinstance(j, tuple):
+                and_cont.append(entities.M(j[1], j[0]))
+            else:
+                and_cont.append(entities.One() if j else entities.Zero())
+        
+        or_container.append(operators.AND(*and_cont))
 
+    return operators.OR(*or_container)
                 
 if __name__ == '__main__':
     M = entities.M
     One = entities.One
     Zero = entities.Zero
-    '''
-    print(One().AND(Zero()))
-    '''
-    '''
-    b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
-    c = M(10).AND(M(11))
-    print(b, ', ', c)
-    print(b.NOT(), ', ', c.NOT())
-    print(b.NOR(c))
-    '''
-    '''
-    a = M(1).OR(M(2)).OR(M(3))
-    a1 = M(3).OR(M(2)).OR(M(1))
-    print(a.toString(), a1.toString())
-    '''
-    #b = M(5).AND(M(6)).AND(M(7)).OR(M(4).AND(M(9)))
-    #b = M(1).AND(M(1)).AND(M(1)).AND(M(2)).AND(M(2)).OR(M(1).AND(M(1)).AND(M(1)).AND(M(2)))
-    #b = M(1).AND(M(3)).AND(M(2).NOT()).OR(M(2))
-    #print(b, reduce_expression(b))
-    #b = M(1).AND(M(2)).AND(M(3))
-    #print(b, b.NOT().AND(M(4)))
+    
     
     tests = [
         M(1).OR(Zero()),
@@ -435,19 +490,13 @@ if __name__ == '__main__':
         M(1).NOT().AND((M(1).AND(M(2)).AND(M(3)).AND(M(4))).NOT()),
         (M(1).OR(M(2).NOT()).OR(M(3).NOT())).AND(M(1).OR(M(2).NOT()).OR(M(3))).AND(M(1).OR(M(2)).OR(M(3).NOT())),
         ((M(1).AND(M(2).NOT())).AND(M(3).OR(M(2).AND(M(4)))).OR(M(1).NOT().AND(M(2).NOT()))).AND(M(3)),
-        (M(1).AND(M(2))).OR(M(1).AND(M(2).OR(M(3)))).OR(M(2).AND(M(2).OR(M(3))))
+        (M(1).AND(M(2))).OR(M(1).AND(M(2).OR(M(3)))).OR(M(2).AND(M(2).OR(M(3)))),
+        (M(1).OR(M(2))).AND(M(1).OR(M(3))).AND(M(2).OR(M(4))).AND(M(3).OR(M(5))).AND(M(4).OR(M(6))).AND(M(5).OR(M(6)))
     ]
-    
-    #(A + B’ + C’)(A + B’ + C)(A + B + C’)
-    #(AB’(C+BD) + A’B’)C
-    #XY + X(Y+Z) + Y(Y+Z)
-
     for i, a in enumerate(tests, 1):
-        print(f'#{i}', reduce_expression(a)) 
-        print('-'*40)
-
-   
-    
-    
+        pass
+    #print(reduce_expression_trunc(M(1).AND(M(1)).AND(M(2)).AND(One())))
+    #print(reduce_expression_trunc(M(1).OR(M(1).AND(M(2)))))
+    #print(One().toList())
 
 
