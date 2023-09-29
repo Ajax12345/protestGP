@@ -411,19 +411,54 @@ if __name__ == '__main__':
     '''
     #g.render()
     import itertools
-    g = Genotype.random_genotype(9, 3, 6)
+    g = Genotype.random_genotype(9, 3, 8)
     #print(g)
-    '''
+
+    from sympy.logic import SOPform
     from sympy.logic import POSform
+    import time, sympy
     from sympy import symbols
 
+    
     minterms = []
     for t in itertools.product(*[[0,1] for _ in range(9)]):
         with g:
             if g(*t)[0]:minterms.append([*t])
 
-    print(POSform([*symbols('a:9')], minterms, []))
-    '''
-    g.traverse()
+
+    print('minterm length', len(minterms))
+    k = POSform([*symbols('a:9')], minterms, [])
+    print(k)
+
+    #sympy.logic.boolalg.Not
+    #sympy.core.symbol.Symbol
+    def traverse(expr:sympy, d:dict) -> None:
+        if isinstance(expr, int):
+            return 
+
+        if isinstance(expr, sympy.core.symbol.Symbol):
+            d[1].add(str(expr))
+            return
+        
+        if isinstance(expr, sympy.logic.boolalg.Not):
+            d[0].append('Not')
+        
+        else:
+            d[0].extend([type(expr).__name__ for _ in range(len(expr.args) - 1)])
+        
+        for i in expr.args:
+            traverse(i, d)
+            
+        
+    a0, a1, a2, a3, a4, a5, a6, a7, a8 = symbols('a:9')
+    #k = (a3 | ~a0) & (a3 | ~a5) & (a3 | ~a2 | ~a8)
+    #k = (~a0)
+    d = {1:set(), 0:[]}
+    traverse(a0, d)
+    print(d)
+    #print(g.complexity)
+    
+    
+    #g.traverse()
     #g.render()
     

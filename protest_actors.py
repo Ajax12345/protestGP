@@ -3,7 +3,10 @@ import warnings, networkx as nx
 import matplotlib.pyplot as plt
 from actor_genotype import Genotype, node
 import statistics, collections, numpy as np
-import json, datetime
+import json, datetime, itertools
+from sympy.logic import POSform
+from sympy import symbols
+import sympy
 
 TRAITS = [
     'empathy',
@@ -16,6 +19,10 @@ TRAITS = [
     'persuasiveness',
     'agreeableness'
 ]
+
+ALL_TRAITS = [*itertools.product(*[range(2) for _ in range(len(TRAITS))])]
+
+assert len(ALL_TRAITS) == 512
 
 class Actor:
     """
@@ -45,12 +52,44 @@ class Actor:
 
     def mutate(self, prob:float = 1) -> None:
         if random.random() >= 1 - prob:
-            ind = random.choice([*range(len(self.traits))])
-            self.traits[ind] = int(not self.traits[ind])
+            for ind in random.sample([*range(len(self.traits))], random.randint(1, 4)):
+                self.traits[ind] = int(not self.traits[ind])
+
             self.genotype.mutate()
 
     def complexity(self) -> int:
-        return self.genotype.complexity
+        def traverse(expr:sympy, d:dict) -> None:
+            if isinstance(expr, int):
+                return 
+
+            if isinstance(expr, sympy.core.symbol.Symbol):
+                d[1].add(str(expr))
+                return
+            
+            if isinstance(expr, sympy.logic.boolalg.Not):
+                d[0].append('Not')
+            
+            else:
+                d[0].extend([type(expr).__name__ for _ in range(len(expr.args) - 1)])
+            
+            for i in expr.args:
+                traverse(i, d)
+
+        minterms = []
+        for trait in ALL_TRAITS:
+            if trait in self._outputs:
+                if self._outputs[trait]:
+                    minterms.append([*trait])
+            
+            else:
+                with self.genotype:
+                    if self.genotype(*trait)[0]:
+                        minterms.append([*trait])
+
+        expr = POSform([*symbols(f'a:{len(len(TRAITS))}')], minterms, [])
+        d = {1:set(), 0:[]}
+        traverse(expr, d)
+        return len(d[1]) + len(d[0])
 
     @classmethod
     def random_trait(cls) -> typing.List[int]:

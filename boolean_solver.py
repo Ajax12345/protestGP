@@ -312,7 +312,7 @@ def chunk_groups(l, groups, g = []):
                 yield from chunk_groups(l[:i]+l[i+1:], groups, g[:-1]+[g[-1]+[a]])
 
 def reduce_expression_trunc(new_expr) -> 'operator':
-    print('new expr here', new_expr)
+    #print('new expr here', new_expr)
     def not_t(t):
         return (not t[0], t[1])
 
@@ -338,7 +338,7 @@ def reduce_expression_trunc(new_expr) -> 'operator':
     
     for rule, result in RULE_TRUNC['OR']:
         #print('rule', rule.toList())
-        print('rule, result', rule, result)
+        #print('rule, result', rule, result)
         [[a], b] = sorted(rule.toList(), key=len)
         for i, c_a in enumerate(new_expr):
             bindings = {a:c_a}
@@ -358,7 +358,7 @@ def reduce_expression_trunc(new_expr) -> 'operator':
     return new_expr
 
 
-def reduce_expression(new_expr) -> 'operator':
+def reduce_expression(new_expr, as_list = False) -> 'operator':
     if not isinstance(new_expr, list):
         new_expr = new_expr.toList()
 
@@ -493,8 +493,34 @@ if __name__ == '__main__':
         (M(1).AND(M(2))).OR(M(1).AND(M(2).OR(M(3)))).OR(M(2).AND(M(2).OR(M(3)))),
         (M(1).OR(M(2))).AND(M(1).OR(M(3))).AND(M(2).OR(M(4))).AND(M(3).OR(M(5))).AND(M(4).OR(M(6))).AND(M(5).OR(M(6)))
     ]
-    for i, a in enumerate(tests, 1):
-        pass
+    def to_pos(trait):
+        (i, a), *b = enumerate(trait, 1)
+        m = M(i)
+        if not a:
+            m = m.NOT()
+        
+        for i, a in b:
+            _m = M(i)
+            if not a:
+                _m = _m.NOT()
+            
+            m = m.OR(_m)
+
+        return m
+
+    import random
+    a, *b = random.sample([*itertools.product(*[range(2) for _ in range(9)])], 100)
+    a = to_pos(a)
+    c = 0
+    for i in b:
+        c += 1
+        _a = to_pos(i)
+        a = ListToObj(reduce_expression_trunc(a.AND(_a)))
+        print(a)
+        print(c)
+
+    print(a)
+    
     #print(reduce_expression_trunc(M(1).AND(M(1)).AND(M(2)).AND(One())))
     #print(reduce_expression_trunc(M(1).OR(M(1).AND(M(2)))))
     #print(One().toList())
