@@ -57,7 +57,10 @@ class Actor:
 
             self.genotype.mutate()
 
-    def complexity(self) -> int:
+    def complexity(self, min_circuit:bool = False) -> int:
+        if not min_circuit:
+            return self.genotype.complexity
+            
         def traverse(expr:sympy, d:dict) -> None:
             if isinstance(expr, int):
                 return 
@@ -86,7 +89,8 @@ class Actor:
                     if self.genotype(*trait)[0]:
                         minterms.append([*trait])
 
-        expr = POSform([*symbols(f'a:{len(len(TRAITS))}')], minterms, [])
+        print('in here')
+        expr = POSform([*symbols(f'a:{len(TRAITS)}')], minterms, [])
         d = {1:set(), 0:[]}
         traverse(expr, d)
         return len(d[1]) + len(d[0])
@@ -255,12 +259,13 @@ class Environment:
 
     def reproduction(self, control:bool = False) -> None:
         for a_name, agent in self.agents.items():
-            sum_fitness = sum(i.score for i in agent.population)
+            min_score = min(i.score for i in agent.population)
+            sum_fitness = sum(i.score + (abs(min_score) if min_score < 0 else 0) for i in agent.population)
             if not sum_fitness:
                 return 0, a_name
 
             #print(a_name, [i.score for i in agent.population])
-            fitness_probability = [i.score/sum_fitness for i in agent.population]
+            fitness_probability = [(i.score + (abs(min_score) if min_score < 0 else 0))/sum_fitness for i in agent.population]
             new_population = []
             for _ in range(agent.size):
                 if not control:

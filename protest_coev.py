@@ -18,11 +18,11 @@ def CounterProtestors():
 def Public():
     return {'population': [pa.Public() for _ in range(100)], 'size':100}
 
-Protestors.interaction(Police, [[(2, 2), (0, 3)], [(3, 0), (0, 0)]])
-Protestors.interaction(Public, [[(0, 1), (0, 3)], [(1, 0), (2, 2)]])
-Protestors.interaction(CounterProtestors, [[(1, 1), (0, 2)], [(2, 0), (0, 0)]])
-Public.interaction(CounterProtestors, [[(0, 0), (1, 0)], [(2, 0), (1, 1)]])
-CounterProtestors.interaction(Police, [[(0, 0), (0, 2)], [(2, 0), (2, 2)]])
+Protestors.interaction(Police, [[(1, 0), (0, 1)], [(3, -2), (1, 1)]])
+Protestors.interaction(Public, [[(-1, -1), (-2, 0)], [(1, -2), (3, 3)]])
+Protestors.interaction(CounterProtestors, [[(2, 1), (0, 1)], [(2, -1), (2, 2)]])
+Public.interaction(CounterProtestors, [[(1, -1), (0, -1)], [(-1, 0), (2, 2)]])
+CounterProtestors.interaction(Police, [[(-2, -2), (-1, 1)], [(1, -1), (2, 2)]])
 
 
 
