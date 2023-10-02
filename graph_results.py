@@ -29,5 +29,11 @@ def plot_main_complexities(folder = 'comp_matrices_mutations'):
 
 if __name__ == '__main__':
     plot_main_complexities('complexity_100_graphs')
+    plot_main_complexities('comp_control_matrices_mutations')
     plot_main_complexities('comp_matrices_mutations')
     #plot_main_complexities('control_graphs')
+    '''
+    comp_matrices_mutations
+        - latest run Oct 1 2023 on 1000 generation, mutations, new payoff matrices
+        - fitness proportional selection
+    '''
