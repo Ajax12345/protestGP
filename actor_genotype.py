@@ -411,9 +411,11 @@ if __name__ == '__main__':
     '''
     #g.render()
     import itertools
-    g = Genotype.random_genotype(9, 3, 8)
+    g = Genotype.random_genotype(9, 2, 8)
+    g.render()
+    print(g.complexity)
     #print(g)
-
+    '''
     from sympy.logic import SOPform
     from sympy.logic import POSform
     import time, sympy
@@ -458,7 +460,7 @@ if __name__ == '__main__':
     print(d)
     #print(g.complexity)
     
-    
+    '''
     #g.traverse()
     #g.render()
     

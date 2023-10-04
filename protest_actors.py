@@ -50,9 +50,9 @@ class Actor:
         self.score = 0
         return self
 
-    def mutate(self, prob:float = 1) -> None:
+    def mutate(self, prob:float = 0.1) -> None:
         if random.random() >= 1 - prob:
-            for ind in random.sample([*range(len(self.traits))], random.randint(1, 4)):
+            for ind in random.sample([*range(len(self.traits))], random.randint(1, 2)):
                 self.traits[ind] = int(not self.traits[ind])
 
             self.genotype.mutate()
@@ -60,7 +60,7 @@ class Actor:
     def complexity(self, min_circuit:bool = False) -> int:
         if not min_circuit:
             return self.genotype.complexity
-            
+
         def traverse(expr:sympy, d:dict) -> None:
             if isinstance(expr, int):
                 return 
@@ -164,69 +164,69 @@ def DEFAULT_GENOTYPE():
 
 class Protestor(Actor):
     """
-    empathy: 0.6
-    aggression: 0.6
-    narcissism: 0.5
-    leadership: 0.7
-    honesty: 0.5
-    resilience: 0.8
-    assertiveness: 0.8
-    persuasiveness: 0.6
-    agreeableness: 0.3
+    empathy: 0
+    aggression: 0
+    narcissism: 0
+    leadership: 1
+    honesty: 1
+    resilience: 1
+    assertiveness: 1
+    persuasiveness: 0
+    agreeableness: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 2)
+        return Genotype.random_genotype(9, 2, 8)
     
 
 class Police(Actor):
     """
-    empathy: 0.3
-    aggression: 0.85
-    narcissism: 0.7
-    leadership: 0.6
-    honesty: 0.5
-    resilience: 0.8
-    assertiveness: 0.9
-    persuasiveness: 0.6
-    agreeableness: 0.2
+    empathy: 0
+    aggression: 1
+    narcissism: 1
+    leadership: 1
+    honesty: 0
+    resilience: 0
+    assertiveness: 1
+    persuasiveness: 0
+    agreeableness: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 2)
+        return Genotype.random_genotype(9, 2, 8)
 
 class CounterProtestor(Actor):
     """
-    empathy: 0.4
-    aggression: 0.7
-    narcissism: 0.7
-    leadership: 0.4
-    honesty: 0.4
-    resilience: 0.6
-    assertiveness: 0.7
-    persuasiveness: 0.4
-    agreeableness: 0.3
+    empathy: 0
+    aggression: 1
+    narcissism: 0
+    leadership: 0
+    honesty: 0
+    resilience: 1
+    assertiveness: 1
+    persuasiveness: 0
+    agreeableness: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 2)
+        return Genotype.random_genotype(9, 2, 8)
 
 
 class Public(Actor):
     """
-    empathy: 0.5
-    aggression: 0.5
-    narcissism: 0.5
-    leadership: 0.5
-    honesty: 0.5
-    resilience: 0.5
-    assertiveness: 0.5
-    persuasiveness: 0.5
-    agreeableness: 0.5
+    empathy: 1
+    aggression: 0
+    narcissism: 0
+    leadership: 0
+    honesty: 1
+    resilience: 0
+    assertiveness: 0
+    persuasiveness: 1
+    agreeableness: 1
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 2)
+        return Genotype.random_genotype(9, 2, 8)
 
 
 class Environment:

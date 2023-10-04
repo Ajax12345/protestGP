@@ -4,19 +4,19 @@ env = pa.Environment()
 
 @env.agent
 def Protestors():
-    return {'population': [pa.Protestor() for _ in range(100)], 'size':100}
+    return {'population': [pa.Protestor() for _ in range(50)], 'size':50}
 
 @env.agent
 def Police():
-    return {'population': [pa.Police() for _ in range(100)], 'size':100}
+    return {'population': [pa.Police() for _ in range(50)], 'size':50}
 
 @env.agent
 def CounterProtestors():
-    return {'population': [pa.CounterProtestor() for _ in range(100)], 'size':100}
+    return {'population': [pa.CounterProtestor() for _ in range(50)], 'size':50}
 
 @env.agent
 def Public():
-    return {'population': [pa.Public() for _ in range(100)], 'size':100}
+    return {'population': [pa.Public() for _ in range(50)], 'size':50}
 
 Protestors.interaction(Police, [[(1, 0), (0, 1)], [(3, -2), (1, 1)]])
 Protestors.interaction(Public, [[(-1, -1), (-2, 0)], [(1, -2), (3, 3)]])
