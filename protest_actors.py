@@ -9,20 +9,15 @@ from sympy import symbols
 import sympy
 
 TRAITS = [
-    'empathy',
-    'aggression',
-    'narcissism',
-    'leadership',
-    'honesty',
-    'resilience',
-    'assertiveness',
-    'persuasiveness',
-    'agreeableness'
+    'a',
+    'b',
+    'c',
+    'd'
 ]
 
 ALL_TRAITS = [*itertools.product(*[range(2) for _ in range(len(TRAITS))])]
 
-assert len(ALL_TRAITS) == 512
+assert len(ALL_TRAITS) == 2**4
 
 class Actor:
     """
@@ -52,9 +47,12 @@ class Actor:
 
     def mutate(self, prob:float = 0.1) -> None:
         if random.random() >= 1 - prob:
+            '''
             for ind in random.sample([*range(len(self.traits))], random.randint(1, 2)):
                 self.traits[ind] = int(not self.traits[ind])
-
+            '''
+            ind = random.choice([*range(len(self.traits))])
+            self.traits[ind] = int(not self.traits[ind])
             self.genotype.mutate()
 
     def complexity(self, min_circuit:bool = False) -> int:
@@ -89,7 +87,7 @@ class Actor:
                     if self.genotype(*trait)[0]:
                         minterms.append([*trait])
 
-        print('in here')
+        #print('in here')
         expr = POSform([*symbols(f'a:{len(TRAITS)}')], minterms, [])
         d = {1:set(), 0:[]}
         traverse(expr, d)
@@ -161,72 +159,88 @@ def DEFAULT_GENOTYPE():
         ]
     )
 
+def DEFAULT_GENOTYPE_1():
+    return Genotype(
+        inputs = [
+            node.Input(int, 0),
+            node.Input(int, 1),
+            node.Input(int, 2),
+            node.Input(int, 3)
+        ],
+        constants = [
+            node.Constant(int, 4, 1),
+            node.Constant(int, 5, 0)
+        ],
+        gates = [
+            node.operator.NOR(6, inputs=[3, 4]),
+            node.operator.AND(7, inputs=[0, 3]),
+            node.operator.NAND(8, inputs=[2, 2]),
+            node.operator.OR(9, inputs=[2, 2]),
+            node.operator.NAND(10, inputs=[4, 2]),
+            node.operator.AND(11, inputs=[8, 6]),
+            node.operator.NAND(12, inputs=[1, 10]),
+            node.operator.NOR(13, inputs=[5, 9]),
+            node.operator.NOR(14, inputs=[9, 7]),
+            node.operator.AND(15, inputs=[11, 4]),
+            node.operator.NAND(16, inputs=[14, 12]),
+            node.operator.OR(17, inputs=[12, 14]),
+            node.operator.OR(18, inputs=[17, 15]),
+            node.operator.NOR(19, inputs=[17, 16])
+        ],
+        outputs = [
+            node.Output(int, 20, 18)
+        ]
+    )
 
 class Protestor(Actor):
     """
-    empathy: 0
-    aggression: 0
-    narcissism: 0
-    leadership: 1
-    honesty: 1
-    resilience: 1
-    assertiveness: 1
-    persuasiveness: 0
-    agreeableness: 0
+    a: 1
+    b: 0
+    c: 0
+    d: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 8)
+        #return Genotype.random_genotype(4, 2, 4)
+        return copy.deepcopy(DEFAULT_GENOTYPE_1())
     
 
 class Police(Actor):
     """
-    empathy: 0
-    aggression: 1
-    narcissism: 1
-    leadership: 1
-    honesty: 0
-    resilience: 0
-    assertiveness: 1
-    persuasiveness: 0
-    agreeableness: 0
+    a: 0
+    b: 1
+    c: 0
+    d: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 8)
+        #return Genotype.random_genotype(4, 2, 4)
+        return copy.deepcopy(DEFAULT_GENOTYPE_1())
 
 class CounterProtestor(Actor):
     """
-    empathy: 0
-    aggression: 1
-    narcissism: 0
-    leadership: 0
-    honesty: 0
-    resilience: 1
-    assertiveness: 1
-    persuasiveness: 0
-    agreeableness: 0
+    a: 0
+    b: 0
+    c: 1
+    d: 0
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 8)
+        #return Genotype.random_genotype(4, 2, 4)
+        return copy.deepcopy(DEFAULT_GENOTYPE_1())
 
 
 class Public(Actor):
     """
-    empathy: 1
-    aggression: 0
-    narcissism: 0
-    leadership: 0
-    honesty: 1
-    resilience: 0
-    assertiveness: 0
-    persuasiveness: 1
-    agreeableness: 1
+    a: 0
+    b: 0
+    c: 0
+    d: 1
     """
 
     def build_genotype(self) -> typing.Any:
-        return Genotype.random_genotype(9, 2, 8)
+        #return Genotype.random_genotype(4, 2, 4)
+        return copy.deepcopy(DEFAULT_GENOTYPE_1())
 
 
 class Environment:
@@ -369,3 +383,10 @@ if __name__ == '__main__':
     print('Police random trait', Police.random_trait())
     print('CounterProtestor random trait', CounterProtestor.random_trait())
     print('Public random trait', Public.random_trait())
+    g = DEFAULT_GENOTYPE_1()
+    g.render()
+    '''
+    for _ in range(10):
+        g.render()
+        g.mutate()
+    '''

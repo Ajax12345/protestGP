@@ -1,4 +1,4 @@
-import random, typing, json
+import random, typing, json, copy
 import collections, networkx as nx
 from networkx.drawing.nx_agraph import write_dot, graphviz_layout
 import matplotlib.pyplot as plt, itertools
@@ -57,7 +57,7 @@ class node:
             return val
 
         def __repr__(self) -> str:
-            return f'node.{self.__class__.__name__}({self._type.__name__}, {self.name})'
+            return f'node.{self.__class__.__name__}({self._type.__name__}, {self.name}, input={self.input})'
 
     class operator:
         class NAND:
@@ -224,7 +224,7 @@ class Genotype:
 
         return len(parent_gates - {i.name for i in self.kwargs['constants']})
 
-    def mutate(self, prob:float = 0.5,
+    def mutate(self, choice:typing.Union[None, int] = None,
             gates = [node.operator.NAND, node.operator.AND, 
                 node.operator.OR, node.operator.NOR]) -> None:
         """
@@ -242,7 +242,7 @@ class Genotype:
 
             choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
 
-            if (mutation:=random.choice(choices)) == 1:
+            if (mutation:=random.choice(choices)) == 1 or choice == 1:
                 #ADD NEW GATE
                 #print('ADDING NEW GATE')
                 _gate = random.choice(gates)
@@ -273,7 +273,7 @@ class Genotype:
                 self.gate_bindings[gate.name] = gate
                 self.kwargs['gates'].append(gate)
 
-            elif mutation == 2:
+            elif mutation == 2 or choice == 2:
                 #REMOVE EXISTING GATE
                 #print('REMOVING EXISTING GATE')
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
@@ -295,7 +295,7 @@ class Genotype:
                 del self.gate_bindings[gate.name]
                 self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
     
-            elif mutation == 3:
+            elif mutation == 3 or choice == 3:
                 #REWIRING EDGES
                 #print("REWIRING EDGES")
                 for i in self.gate_bindings:
@@ -309,7 +309,7 @@ class Genotype:
                             self.gate_bindings[i].inputs[x] = random.choice(parents)
                             #print('after rewiring', self.gate_bindings[i])
 
-            elif mutation == 4:
+            elif mutation == 4 or choice == 4:
                 #UPDATE GATE TYPE
                 #print('UPDATING GATE TYPE')
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
@@ -343,32 +343,77 @@ class Genotype:
         #print(self.value_bindings)
 
     @classmethod
-    def random_genotype(cls, inputs:int, constants:int, depth:int) -> 'Genotype':
+    def random_genotype_m1(cls, inputs:int, constants:int, depth:int, outputs:int, levels_back:int = 1) -> 'Genotype':
+        I = itertools.count(0)
+        inp = [node.Input(int, next(I)) for _ in range(inputs)]
+        constants = [node.Constant(int, next(I), value = 0) for _ in range(constants)]
+        gates, levels = [], [inp+constants]
+        for _ in range(depth):
+            new_level, possible_parents = [], [j for k in levels[-1*levels_back:] for j in k]
+            for _ in range(inputs):
+                _gate = random.choice([node.operator.NAND, node.operator.AND, 
+                    node.operator.OR, node.operator.NOR])
+
+                new_gate = _gate(next(I), inputs = [i.name for i in random.sample(possible_parents, 2)])
+                new_level.append(new_gate)
+                gates.append(new_gate)
+
+            levels.append(new_level)
+
+        return cls(
+            inputs = inp,
+            constants = constants,
+            gates = gates,
+            outputs = [node.Output(int, next(I), i.name) for i in random.sample(levels[-1], outputs)]
+        )
+
+
+    @classmethod
+    def random_genotype(cls, inputs:int, constants:int, depth:int, outputs:int = 1) -> 'Genotype':
         I = itertools.count(0)
         inp = [node.Input(int, next(I)) for _ in range(inputs)]
         constants = [node.Constant(int, next(I), value = 0) for _ in range(constants)]
         all_nodes = [i.name for i in inp] + [i.name for i in constants]
-        gates = []
+        gates, all_parents = [], collections.defaultdict(set)
         last_level = all_nodes
         for j in range(depth):
             level_gates = []
             for _ in range(len(last_level) - 1):
                 _gate = random.choice([node.operator.NAND, node.operator.AND, 
                     node.operator.OR, node.operator.NOR])
-                _inputs = [random.choice(last_level) if random.random() >= 0.5 - j*0.5/depth else random.choice(all_nodes) for _ in range(2)]
-                level_gates.append(_gate(next(I), inputs = _inputs))
-            
+                
+                _inputs = []
+                for _ in range(2):
+                    while (input_node:=(random.choice(last_level) if random.random() >= 0.5 - j*0.5/depth else random.choice(all_nodes))) in _inputs:
+                        pass
+                    
+                    _inputs.append(input_node)
+
+                level_gates.append(_gate(gate_id:=next(I), inputs = _inputs))
+                
+                for _i in _inputs:
+                    all_parents[gate_id].add(_i)
+                    for p_i in all_parents.get(_i, []):
+                        all_parents[gate_id].add(p_i)
+                        
             if j:
                 all_nodes.extend(last_level)
             
             last_level = [i.name for i in level_gates]
             gates.extend(level_gates)
         
+        random.shuffle(last_level)
+        inactive = [i for i in all_parents if all(i not in all_parents[j] for j in last_level) and i not in last_level]
+        random.shuffle(inactive)
+        remainder = [i for i in all_parents if i not in last_level + inactive]
+        random.shuffle(remainder)
+        all_output_options = last_level + inactive + remainder
+        #print(all_output_options)
         return cls(
             inputs = inp,
             constants = constants,
             gates = gates,
-            outputs = [node.Output(int, next(I), random.choice(last_level))]
+            outputs = [node.Output(int, next(I), i) for i in all_output_options[:outputs]]
         )
         
     def __repr__(self) -> str:
@@ -376,91 +421,62 @@ class Genotype:
 
 
 if __name__ == '__main__':
-    g = Genotype(
-        inputs = [
-            node.Input(int, 0),
-            node.Input(int, 1),
-            node.Input(int, 2)
-        ],
-        constants = [
-            node.Constant(int, 3, value = 0),
-            node.Constant(int, 4, value = 1)
-        ],
-        gates = [
-            node.operator.NAND(5, inputs = [0, 1]),
-            node.operator.NAND(6, inputs = [2, 3]),
-            node.operator.NAND(7, inputs = [5, 1]),
-            node.operator.NAND(8, inputs = [2, 4]),
-            node.operator.NAND(9, inputs = [7, 7]),
-            node.operator.NAND(10, inputs = [7, 8])
-        ],
-        outputs = [node.Output(int, 11, 10)]
-    )
+    def DEFAULT_GENOTYPE_1():
+        return Genotype(
+            inputs = [
+                node.Input(int, 0),
+                node.Input(int, 1),
+                node.Input(int, 2),
+                node.Input(int, 3)
+            ],
+            constants = [
+                node.Constant(int, 4, 1),
+                node.Constant(int, 5, 0)
+            ],
+            gates = [
+                node.operator.NOR(6, inputs=[3, 4]),
+                node.operator.AND(7, inputs=[0, 3]),
+                node.operator.NAND(8, inputs=[2, 2]),
+                node.operator.OR(9, inputs=[2, 2]),
+                node.operator.NAND(10, inputs=[4, 2]),
+                node.operator.AND(11, inputs=[8, 6]),
+                node.operator.NAND(12, inputs=[1, 10]),
+                node.operator.NOR(13, inputs=[5, 9]),
+                node.operator.NOR(14, inputs=[9, 7]),
+                node.operator.AND(15, inputs=[11, 4]),
+                node.operator.NAND(16, inputs=[14, 12]),
+                node.operator.OR(17, inputs=[12, 14]),
+                node.operator.OR(18, inputs=[17, 15]),
+                node.operator.NOR(19, inputs=[17, 16])
+            ],
+            outputs = [
+                node.Output(int, 20, 18)
+            ]
+        )
+
+    def test_mutation_effect(G):
+        complexity_changes = collections.defaultdict(list)
+        for i in range(1,5):
+            for _ in range(1000):
+                g = copy.deepcopy(G)
+                c1 = g.complexity
+                g.mutate(i)
+                c2 = g.complexity
+                complexity_changes[i].append(c2 - c1)
+                #print(g.complexity)
+
+        #print(complexity_changes)
+
+        plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
+        plt.show()
+
     
+    test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1))
+    test_mutation_effect(DEFAULT_GENOTYPE_1())
+    test_mutation_effect(Genotype.random_genotype(5, 2, 5, 4))
+    test_mutation_effect(Genotype.random_genotype_m1(5, 2, 5, 4, 1))
     '''
-    for a, b in [([0, 0, 0], False), ([0, 0, 1], False), ([0, 1, 0], True), ([0, 1, 1], False), ([1, 0, 0], True), ([1, 0, 1], True), ([1, 1, 0], True), ([1, 1, 1], True)]:
-        with g:
-            assert g(*a[::-1]) == [b]  
-    ''' 
-    ''' 
-    g.mutate()
-    g.mutate()
-    g.mutate()
-    print(g.complexity)
+    g = Genotype.random_genotype(5, 2, 5, 4)
     g.render()
     '''
-    #g.render()
-    import itertools
-    g = Genotype.random_genotype(9, 2, 8)
-    g.render()
-    print(g.complexity)
-    #print(g)
-    '''
-    from sympy.logic import SOPform
-    from sympy.logic import POSform
-    import time, sympy
-    from sympy import symbols
-
-    
-    minterms = []
-    for t in itertools.product(*[[0,1] for _ in range(9)]):
-        with g:
-            if g(*t)[0]:minterms.append([*t])
-
-
-    print('minterm length', len(minterms))
-    k = POSform([*symbols('a:9')], minterms, [])
-    print(k)
-
-    #sympy.logic.boolalg.Not
-    #sympy.core.symbol.Symbol
-    def traverse(expr:sympy, d:dict) -> None:
-        if isinstance(expr, int):
-            return 
-
-        if isinstance(expr, sympy.core.symbol.Symbol):
-            d[1].add(str(expr))
-            return
-        
-        if isinstance(expr, sympy.logic.boolalg.Not):
-            d[0].append('Not')
-        
-        else:
-            d[0].extend([type(expr).__name__ for _ in range(len(expr.args) - 1)])
-        
-        for i in expr.args:
-            traverse(i, d)
-            
-        
-    a0, a1, a2, a3, a4, a5, a6, a7, a8 = symbols('a:9')
-    #k = (a3 | ~a0) & (a3 | ~a5) & (a3 | ~a2 | ~a8)
-    #k = (~a0)
-    d = {1:set(), 0:[]}
-    traverse(a0, d)
-    print(d)
-    #print(g.complexity)
-    
-    '''
-    #g.traverse()
-    #g.render()
-    
+    #test_block_layers()
