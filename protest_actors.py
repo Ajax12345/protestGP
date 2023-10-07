@@ -202,7 +202,8 @@ class Protestor(Actor):
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
-        return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        #return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
     
 
 class Police(Actor):
@@ -215,7 +216,8 @@ class Police(Actor):
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
-        return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        #return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 class CounterProtestor(Actor):
     """
@@ -227,7 +229,8 @@ class CounterProtestor(Actor):
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
-        return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        #return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 
 class Public(Actor):
@@ -240,7 +243,8 @@ class Public(Actor):
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
-        return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        #return copy.deepcopy(DEFAULT_GENOTYPE_1())
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 
 class Environment:
@@ -250,14 +254,16 @@ class Environment:
         self.generation = 1
         self.generation_complexities = {}
 
+    def activate(self, outputs:typing.List[int]) -> int:
+        return max(collections.Counter(outputs).items(), key=lambda x:x[1])[0]
 
     def run_interactions(self) -> None:
         print('-'*40)
         for (a1, a2), [agent1, agent2, matrix] in self.interactions.items():
             for actor1 in agent1.population:
                 for actor2 in agent2.population:
-                    [a1_decision] = actor1.genotype(*actor2.traits)
-                    [a2_decision] = actor2.genotype(*actor1.traits)
+                    a1_decision = self.activate(actor1.genotype(*actor2.traits))
+                    a2_decision = self.activate(actor2.genotype(*actor1.traits))
                     actor1._outputs[tuple(actor2.traits)] = a1_decision
                     actor2._outputs[tuple(actor1.traits)] = a2_decision
                     a1_payout, a2_payout = matrix[a1_decision][a2_decision]

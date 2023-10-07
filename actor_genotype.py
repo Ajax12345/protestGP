@@ -241,8 +241,10 @@ class Genotype:
                 self.traverse()
 
             choices = [1]+[2, 3, 4]*bool(self.gate_bindings)
+            if choice is not None:
+                choices = [choice]
 
-            if (mutation:=random.choice(choices)) == 1 or choice == 1:
+            if (mutation:=random.choice(choices)) == 1:
                 #ADD NEW GATE
                 #print('ADDING NEW GATE')
                 _gate = random.choice(gates)
@@ -273,7 +275,7 @@ class Genotype:
                 self.gate_bindings[gate.name] = gate
                 self.kwargs['gates'].append(gate)
 
-            elif mutation == 2 or choice == 2:
+            elif mutation == 2:
                 #REMOVE EXISTING GATE
                 #print('REMOVING EXISTING GATE')
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
@@ -295,7 +297,7 @@ class Genotype:
                 del self.gate_bindings[gate.name]
                 self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
     
-            elif mutation == 3 or choice == 3:
+            elif mutation == 3:
                 #REWIRING EDGES
                 #print("REWIRING EDGES")
                 for i in self.gate_bindings:
@@ -309,7 +311,7 @@ class Genotype:
                             self.gate_bindings[i].inputs[x] = random.choice(parents)
                             #print('after rewiring', self.gate_bindings[i])
 
-            elif mutation == 4 or choice == 4:
+            elif mutation == 4:
                 #UPDATE GATE TYPE
                 #print('UPDATING GATE TYPE')
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
@@ -470,13 +472,37 @@ if __name__ == '__main__':
         plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
         plt.show()
 
+    def test_mutation_over_random(method, *args) -> None:
+        complexity_changes = collections.defaultdict(list)
+        for I in range(100):
+            G = method(*args)
+            for i in range(1,5):
+                for _ in range(1000):
+                    g = copy.deepcopy(G)
+                    c1 = g.complexity
+                    g.mutate(i)
+                    c2 = g.complexity
+                    complexity_changes[i].append(c2 - c1)
+            #print(I)
+
+        plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
+        plt.show()
+    
+    
+    #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
+    #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
+    #test_mutation_over_random(Genotype.random_genotype_m1, 4, 0, 4, 4, 1)
+    
     
     test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1))
     test_mutation_effect(DEFAULT_GENOTYPE_1())
     test_mutation_effect(Genotype.random_genotype(5, 2, 5, 4))
     test_mutation_effect(Genotype.random_genotype_m1(5, 2, 5, 4, 1))
-    '''
-    g = Genotype.random_genotype(5, 2, 5, 4)
-    g.render()
-    '''
+    
+    
+    #g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+    #g.mutate(4)
+    #g.render()
+    
+    
     #test_block_layers()
