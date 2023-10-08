@@ -1,0 +1,12 @@
+Experiment 1: 
+    Oct 7 @ 9:15 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 1) created for each actor upon instantiation
+        - single level back, 4x4 layers
+
+    Output folder: o1
+
+    Future experiments:
+        - try a universal, single robust circuit template for each actor
+        - try 3 levels back
+        - lower mutation rate to 0.05
+        
