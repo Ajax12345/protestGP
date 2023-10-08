@@ -493,16 +493,16 @@ if __name__ == '__main__':
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
     #test_mutation_over_random(Genotype.random_genotype_m1, 4, 0, 4, 4, 1)
     
-    
+    '''
     test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1))
     test_mutation_effect(DEFAULT_GENOTYPE_1())
     test_mutation_effect(Genotype.random_genotype(5, 2, 5, 4))
     test_mutation_effect(Genotype.random_genotype_m1(5, 2, 5, 4, 1))
+    '''
     
-    
-    #g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+    g = Genotype.random_genotype_m1(6, 0, 6, 4, 1)
     #g.mutate(4)
-    #g.render()
+    g.render()
     
     
     #test_block_layers()

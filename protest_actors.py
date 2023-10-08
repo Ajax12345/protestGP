@@ -45,7 +45,7 @@ class Actor:
         self.score = 0
         return self
 
-    def mutate(self, prob:float = 0.1) -> None:
+    def mutate(self, prob:float = 0.01) -> None:
         if random.random() >= 1 - prob:
             '''
             for ind in random.sample([*range(len(self.traits))], random.randint(1, 2)):
@@ -203,7 +203,7 @@ class Protestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
     
 
 class Police(Actor):
@@ -217,7 +217,7 @@ class Police(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 class CounterProtestor(Actor):
     """
@@ -230,7 +230,7 @@ class CounterProtestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Public(Actor):
@@ -244,7 +244,7 @@ class Public(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Environment:
@@ -255,6 +255,7 @@ class Environment:
         self.generation_complexities = {}
 
     def activate(self, outputs:typing.List[int]) -> int:
+        '''majority voting'''
         return max(collections.Counter(outputs).items(), key=lambda x:x[1])[0]
 
     def run_interactions(self) -> None:
