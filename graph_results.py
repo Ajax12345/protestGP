@@ -32,7 +32,7 @@ if __name__ == '__main__':
     #plot_main_complexities('comp_control_matrices_mutations')
     #plot_main_complexities('comp_matrices_mutations')
     #plot_main_complexities('o1')
-    plot_main_complexities('o2')
+    plot_main_complexities('o4')
     #plot_main_complexities('control_graphs')
     '''
     comp_matrices_mutations

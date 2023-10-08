@@ -203,7 +203,7 @@ class Protestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
     
 
 class Police(Actor):
@@ -217,7 +217,7 @@ class Police(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 class CounterProtestor(Actor):
     """
@@ -230,7 +230,7 @@ class CounterProtestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 
 class Public(Actor):
@@ -244,7 +244,7 @@ class Public(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
 
 
 class Environment:

@@ -34,3 +34,45 @@ Experiment 2:
 
     Observations:
         - casual fluxations in the complexity of every actor but the counterprotestors, who steadily decrease
+
+Experiment 3: 
+    Oct 7 @ 11:00 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) created for each actor upon instantiation
+        - 3 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+
+    Output folder: o3
+
+    Future experiments:
+        - larger initial population sizes (50 -> 100)
+
+    CANCELED
+
+Experiment 4: 
+    Oct 8 @ 7:42 AM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 1) created for each actor upon instantiation
+        - 1 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+
+    Output folder: o4
+
+    Future experiments:
+        - larger initial population sizes (50 -> 100)
+
+    Observations:
+        - steady decrease in Police complexity, but everything else holding steady
+
+
+
+Experiment 5: 
+    Oct 8 @ 1:19 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 1) created for each actor upon instantiation
+        - 1 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+        - 100 population size
+
+    Output folder: o5
+
