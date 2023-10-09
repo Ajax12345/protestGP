@@ -323,6 +323,28 @@ class Genotype:
 
         return G
 
+    @classmethod
+    def rewire_node(cls, G:'Genotype') -> 'Genotype':
+        parents, levels = cls.parents_and_levels(G)
+        node_levels = {j:a for a, b in levels.items() for j in b}
+        active = {j for i in G.kwargs['outputs'] for j in [i.input, *parents.get(i.input, [])]}
+        active = {i for i in active if node_levels[i] != min(levels)}
+        for _ in range(10):
+            to_rewire = random.choice([*active])
+            c_ind = random.choice([*range(len(G.gate_bindings[to_rewire].inputs))])
+            if not (s_options:=[*{a for a, b in node_levels.items() if b < node_levels[to_rewire] and node_levels[to_rewire] - b <= G.levels_back and a not in G.gate_bindings[to_rewire].inputs}]):
+                continue
+
+            print('to rewire', to_rewire)
+            new_source = random.choice(s_options)
+            for gate in G.kwargs['gates']:
+                if gate.name == to_rewire:
+                    print('c_ind', c_ind, 'c_ind value', gate.inputs[c_ind], 'and new_source', new_source)
+                    gate.inputs[c_ind] = new_source
+            break
+
+        return G
+
     def mutate_v2(self, choice:typing.Union[None, int] = None, gates = [node.operator.NAND, node.operator.AND, 
                 node.operator.OR, node.operator.NOR]) -> None:
     
@@ -361,9 +383,25 @@ class Genotype:
             print('REWIRE EDGE')
             #over 10 rewiring actions, track the change in complexity, and choose the result that has the maximum positive increase in complexity
             #if possible, choose 0 change in complexity
+            #if change => exists, chose it, else, skip mutation
+            original_complexity = self.__class__.g_complexity(self)
+            for _ in range(10):
+                g = self.__class__.rewire_node(copy.deepcopy(self))
+                if (c1:=self.__class__.g_complexity(g)) >= original_complexity:
+                    print('successful rewire', original_complexity, c1)
+                    self.kwargs['gates'] = g.kwargs['gates']
+                    self.gate_bindings = {}
+                    for i in g.kwargs['gates']:
+                        self.gate_bindings[i.name] = i
+                
+                    break
 
         elif mutation == 4:
             print('UPDATE NODE')
+            gate = self.gate_bindings[random.choice([*self.gate_bindings])]
+            new_gate = random.choice([i for i in gates if not isinstance(gate, i)])(gate.name, inputs = gate.inputs)
+            self.gate_bindings[gate.name] = new_gate
+            self.kwargs['gates'] = [i if i.name != new_gate.name else new_gate for i in self.kwargs['gates']]
 
         
 
@@ -715,12 +753,12 @@ if __name__ == '__main__':
     test_mutation_effect(Genotype.random_genotype_m1(5, 2, 5, 4, 1))
     '''
     
-    g = DEFAULT_GENOTYPE_2()
+    #g = DEFAULT_GENOTYPE_2()
     #g = Genotype.random_genotype_m1(6, 0, 6, 4, 3)
-    g = Genotype.random_genotype_m1(9, 0, 9, 4, 3)
-    #g = DEFAULT_GENOTYPE_3()
+    #g = Genotype.random_genotype_m1(9, 0, 9, 4, 3)
+    g = DEFAULT_GENOTYPE_3()
     #print('default complexity', g.complexity)
-    g.mutate_v2(choice = 2)
+    g.mutate_v2(choice = 4)
   
     g.render()
     #test_block_layers()
