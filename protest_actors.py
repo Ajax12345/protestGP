@@ -194,57 +194,57 @@ def DEFAULT_GENOTYPE_1():
 
 class Protestor(Actor):
     """
-    a: 1
-    b: 0
-    c: 0
-    d: 0
+    a: 0.8
+    b: 0.4
+    c: 0.4
+    d: 0.4
     """
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
     
 
 class Police(Actor):
     """
-    a: 0
-    b: 1
-    c: 0
-    d: 0
+    a: 0.4
+    b: 0.8
+    c: 0.4
+    d: 0.4
     """
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 class CounterProtestor(Actor):
     """
-    a: 0
-    b: 0
-    c: 1
-    d: 0
+    a: 0.4
+    b: 0.4
+    c: 0.8
+    d: 0.4
     """
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Public(Actor):
     """
-    a: 0
-    b: 0
-    c: 0
-    d: 1
+    a: 0.4
+    b: 0.4
+    c: 0.4
+    d: 0.8
     """
 
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Environment:
@@ -275,8 +275,15 @@ class Environment:
     def increment_generation(self) -> None:
         self.generation += 1
 
+    def fitness_score_offsets(self, population:typing.List['Aget']) -> typing.List[float]:
+        min_score = min(i.score for i in population)
+        return [i.score + (abs(min_score) if min_score < 0 else 0) for i in population]
+
     def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
-        self.generation_complexities[self.generation] = {a:c_func(sorted([i.complexity() for i in b.population])) for a, b in self.agents.items()}
+        self.generation_complexities[self.generation] = {
+                a:{'complexity':c_func(sorted([i.complexity() for i in b.population])),
+                    'fitness':c_func(sorted(self.fitness_score_offsets(b.population)))}
+            for a, b in self.agents.items()}
 
     def reproduction(self, control:bool = False) -> None:
         for a_name, agent in self.agents.items():
@@ -312,11 +319,17 @@ class Environment:
                 json.dump(self.generation_complexities, f)
 
         agent_complexities = collections.defaultdict(list)
+        agent_fitness = collections.defaultdict(list)
         all_generations = []
         for generation, agents in self.generation_complexities.items():
             all_generations.append(generation)
-            for agent, complexity in agents.items():
-                agent_complexities[agent].append(complexity)
+            for agent, metrics in agents.items():
+                if not isinstance(metrics, dict):
+                    agent_complexities[agent].append(metrics)
+                
+                else:
+                    agent_complexities[agent].append(metrics['complexity'])
+                    agent_fitness[agent].append(metrics['fitness'])
             
 
         if not suppress_plot:
@@ -325,8 +338,19 @@ class Environment:
             
             plt.xlabel('Generation')
             plt.ylabel('Median complexity')
+            plt.title('Complexities')
             plt.legend()
             plt.show()
+
+            if agent_fitness:
+                for agent, fitness in agent_fitness.items():
+                    plt.plot(all_generations, fitness, label = agent)
+                
+                plt.xlabel('Generation')
+                plt.ylabel('Median fitness')
+                plt.title('Fitness')
+                plt.legend()
+                plt.show()
 
     def graph(self) -> None:
         G = nx.Graph()

@@ -76,3 +76,45 @@ Experiment 5:
 
     Output folder: o5
 
+    Future experiments:
+        - different fitness measure?
+
+    Observations:
+        need more data
+
+    COME BACK TO
+
+Experiment 6: 
+    Oct 8 @ 4:12 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) created for each actor upon instantiation
+        - 3 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+        - 50 population size
+
+    Output folder: o3
+
+    Continuation of EXPERIMENT 3
+
+    Observations:
+        - general logarithmic complexity trends for all, except for protestors, who drop off gradually
+        
+
+Experiment 7: 
+    Oct 8 @ 7:45 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) created for each actor upon instantiation
+        - 3 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+        - 50 population size
+        - Actor traits now have <1 probabilities
+
+    Output folder: o7
+
+    Future experiments:
+        - try without mutating traits
+    
+    Observations:
+        - slight increase in complexity for all except Police (perhaps because Police actor only has two relationships?)
+
+    

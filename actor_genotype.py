@@ -143,6 +143,10 @@ class Genotype:
         self.gate_bindings = {j.name:j for j in kwargs['gates']}
         self.value_bindings = None    
 
+    @property
+    def levels_back(self) -> int:
+        return self.kwargs.get('params', {}).get('levels_back')
+
     def __enter__(self) -> 'Genotype':
         return
 
@@ -366,7 +370,12 @@ class Genotype:
             inputs = inp,
             constants = constants,
             gates = gates,
-            outputs = [node.Output(int, next(I), i.name) for i in random.sample(levels[-1], outputs)]
+            outputs = [node.Output(int, next(I), i.name) for i in random.sample(levels[-1], outputs)],
+            params = {'inputs':inputs, 
+                'constants':constants, 
+                'depth':depth, 
+                'outputs':outputs, 
+                'levels_back':levels_back}
         )
 
 
@@ -415,7 +424,11 @@ class Genotype:
             inputs = inp,
             constants = constants,
             gates = gates,
-            outputs = [node.Output(int, next(I), i) for i in all_output_options[:outputs]]
+            outputs = [node.Output(int, next(I), i) for i in all_output_options[:outputs]],
+            params = {'inputs':inputs, 
+                'constants':constants, 
+                'depth':depth, 
+                'outputs':outputs}
         )
         
     def __repr__(self) -> str:
