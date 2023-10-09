@@ -21,8 +21,6 @@ def plot_main_complexities(folder = 'comp_matrices_mutations'):
                             else:
                                 fitness_results[int(generation)][actor].append(float(metrics['fitness']))
                         
-
-
     final = collections.defaultdict(list)
     for generation, actors in results.items():
         for a, b in actors.items():

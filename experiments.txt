@@ -113,6 +113,7 @@ Experiment 7:
 
     Future experiments:
         - try without mutating traits
+        - find optimal strategy for actor and penalize based on how far off the actor is?
     
     Observations:
         - slight increase in complexity for all except Police (perhaps because Police actor only has two relationships?)
