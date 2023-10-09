@@ -273,6 +273,7 @@ class Genotype:
         parents, levels = cls.parents_and_levels(G)
         node_levels = {j:a for a, b in levels.items() for j in b}
         active = {j for i in G.kwargs['outputs'] for j in [i.input, *parents.get(i.input, [])]}
+        active = {i for i in active if not any(j.name == i for j in G.kwargs['inputs'])}
         inactive = {j for a, b in parents.items() for j in [a, *b] if max(levels) != node_levels[j]} - active
         if not inactive:
             print('no inactive nodes')
@@ -302,6 +303,26 @@ class Genotype:
         
         return G
 
+    @classmethod
+    def deactivate_node(cls, G:'Genotype') -> 'Genotype':
+        parents, levels = cls.parents_and_levels(G)
+        node_levels = {j:a for a, b in levels.items() for j in b}
+        active = {j for i in G.kwargs['outputs'] for j in [i.input, *parents.get(i.input, [])]}
+        active = {i for i in active if node_levels[i] != min(levels) and node_levels[i] != max(levels) and not any(k.input == i for k in G.kwargs['outputs'])}
+        if active:
+            to_deactivate = random.choice([*active])
+            print('deactivating this node', to_deactivate)
+            for gate in G.kwargs['gates']:
+                for x, a in enumerate(gate.inputs):
+                    if a == to_deactivate:
+                        rewire_options = {*G.gate_bindings[to_deactivate].inputs} - {*gate.inputs}
+                        if not rewire_options:
+                            rewire_options = {max(parents[to_deactivate])}
+                        gate.inputs[x] = random.choice([*rewire_options])
+                        print('rewriting', gate.name, 'input to', gate.inputs[x])
+
+        return G
+
     def mutate_v2(self, choice:typing.Union[None, int] = None, gates = [node.operator.NAND, node.operator.AND, 
                 node.operator.OR, node.operator.NOR]) -> None:
     
@@ -329,11 +350,20 @@ class Genotype:
             print("REMOVE NODE")
             #when deactivating, the odds are high of strong effects, since the act of rewiring signifcantly increases the probability that the chosen parent of the targt node will have fewer nodes in its active branch
             #thus, deactivation probabilities should decrease as the number of levels increases
-        
+            g = self.__class__.deactivate_node(copy.deepcopy(self))
+            print('complexity change', self.__class__.g_complexity(self), self.__class__.g_complexity(g))
+            self.kwargs['gates'] = g.kwargs['gates']
+            self.gate_bindings = {}
+            for i in g.kwargs['gates']:
+                self.gate_bindings[i.name] = i
+
         elif mutation == 3:
             print('REWIRE EDGE')
             #over 10 rewiring actions, track the change in complexity, and choose the result that has the maximum positive increase in complexity
             #if possible, choose 0 change in complexity
+
+        elif mutation == 4:
+            print('UPDATE NODE')
 
         
 
@@ -357,6 +387,7 @@ class Genotype:
                 choices = [choice]
 
             if (mutation:=random.choice(choices)) == 1:
+                #ADDING NEW NODE
                 _gate = random.choice(gates)
                 gate = _gate(max([*self.value_bindings]+[i.name for i in self.kwargs['outputs']]) + 1, inputs = random.sample([*self.value_bindings], _gate.INPUT_NUM))
                 parents, max_depth = set(), 1
@@ -380,6 +411,7 @@ class Genotype:
                 self.kwargs['gates'].append(gate)
 
             elif mutation == 2:
+                #REMOVING EXISTING NODE
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
                 for i in self.gate_bindings:
                     if gate.name in self.gate_bindings[i].inputs:
@@ -396,6 +428,7 @@ class Genotype:
                 self.kwargs['gates'] = [i for i in self.kwargs['gates'] if i.name != gate.name]
     
             elif mutation == 3:
+                #REWIRING EDGE
                 for i in self.gate_bindings:
                     parents = [j.name for j in self.kwargs['inputs']] + \
                         [j.name for j in self.kwargs['constants']] + \
@@ -406,6 +439,7 @@ class Genotype:
                             self.gate_bindings[i].inputs[x] = random.choice(parents)
 
             elif mutation == 4:
+                #UPDATING NODE
                 gate = self.gate_bindings[random.choice([*self.gate_bindings])]
                 new_gate = random.choice([i for i in gates if not isinstance(gate, i)])(gate.name, inputs = gate.inputs)
                 self.gate_bindings[gate.name] = new_gate
@@ -681,12 +715,12 @@ if __name__ == '__main__':
     test_mutation_effect(Genotype.random_genotype_m1(5, 2, 5, 4, 1))
     '''
     
-    #g = DEFAULT_GENOTYPE_2()
+    g = DEFAULT_GENOTYPE_2()
     #g = Genotype.random_genotype_m1(6, 0, 6, 4, 3)
     g = Genotype.random_genotype_m1(9, 0, 9, 4, 3)
     #g = DEFAULT_GENOTYPE_3()
     #print('default complexity', g.complexity)
-    g.mutate_v2(choice = 1)
+    g.mutate_v2(choice = 2)
   
     g.render()
     #test_block_layers()
