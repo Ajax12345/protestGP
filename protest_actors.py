@@ -53,7 +53,7 @@ class Actor:
             '''
             ind = random.choice([*range(len(self.traits))])
             self.traits[ind] = int(not self.traits[ind])
-            self.genotype.mutate()
+            self.genotype.mutate_v2()
 
     def complexity(self, min_circuit:bool = False) -> int:
         if not min_circuit:

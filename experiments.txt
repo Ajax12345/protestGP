@@ -118,4 +118,32 @@ Experiment 7:
     Observations:
         - slight increase in complexity for all except Police (perhaps because Police actor only has two relationships?)
 
+Experiment 8: 
+    Oct 9 @ 6:48 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) created for each actor upon instantiation
+        - 3 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+        - 50 population size
+        - Actor traits now have <1 probabilities
+        - Running new activation and deactivation mutation scheme
+
+    Output folder: o8
+
+    Future experiments:
+        - craft the network dimensions such that the number of nodes in the output layer is less than that of the preceeding layers
+        - check the source of mutation_v2
+            - remove "if G.value_bindings is not None:"
+
+        - run on old payoff matrix
+
+        - run over 5000 iterations
+
+        - choose nodes to activate and deactivate based on positional probabilities
+            https://www.annualreviews.org/doi/full/10.1146/annurev.micro.57.030502.090855
+            https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7
+
+    Observations:
+        - 
+
     

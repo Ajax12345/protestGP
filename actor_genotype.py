@@ -365,7 +365,7 @@ class Genotype:
             while count < 10:
                 g = self.__class__.activate_node(copy.deepcopy(self))
                 if self.__class__.g_complexity(g) > self.__class__.g_complexity(self):
-                    print('complexity change', self.__class__.g_complexity(self), self.__class__.g_complexity(g))
+                    #print('complexity change', self.__class__.g_complexity(self), self.__class__.g_complexity(g))
                     self.kwargs['gates'] = g.kwargs['gates']
                     self.gate_bindings = {}
                     for i in g.kwargs['gates']:
@@ -756,7 +756,7 @@ if __name__ == '__main__':
     
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
-    #test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 5, 2, 5, 4, 1)
+    test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
     
     
     #test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1), 'mutate_v2')
@@ -766,8 +766,8 @@ if __name__ == '__main__':
     
     #g = DEFAULT_GENOTYPE_3()
     #g = Genotype.random_genotype_m1(6, 0, 6, 4, 3)
-    g = Genotype.random_genotype_m1(9, 0, 9, 4, 3)
+    #g = Genotype.random_genotype_m1(9, 0, 9, 4, 3)
     #g = DEFAULT_GENOTYPE_2()
-    g.render()
-    g.mutate_v2(choice = 1)
-    g.render()
+    #g.render()
+    #g.mutate_v2(choice = 1)
+    #g.render()
