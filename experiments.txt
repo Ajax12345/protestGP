@@ -144,6 +144,44 @@ Experiment 8:
             https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7
 
     Observations:
-        - 
+        - Increase for all except public
 
+    
+Experiment 9: 
+    Oct 10 @ 8:20 PM
+    Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) created for each actor upon instantiation
+        - 3 level back, 4x4 layers
+        - mutation rate: 0.01
+        - payoff matrix has same payouts across instances of collaboration and cooperation
+        - 50 population size
+        - Actor traits now have <1 probabilities
+        - Run over 5000 iterations
+        - Running new activation and deactivation mutation scheme
+
+    Output folder: o9
+
+    Future experiments:
+        - craft the network dimensions such that the number of nodes in the output layer is less than that of the preceeding layers
+        - Have Layers_back = 1
+        - check the source of mutation_v2
+            - remove "if G.value_bindings is not None:"
+
+        - run on old payoff matrix
+
+        - choose nodes to activate and deactivate based on positional probabilities
+            https://www.annualreviews.org/doi/full/10.1146/annurev.micro.57.030502.090855
+            https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7
+
+        - Based on this paper: https://www.scitepress.org/Papers/2021/106400/106400.pdf
+            - it might be best to initialize population with a single, optimal manually-created phenotype for each actor
+
+        - Have o9 as random drift control, and NOP (manually-created phenotype) as comparison
+        
+        - Assign each node in circuit a weight, which affects its selection for activation or deactivation
+
+        - link_to = random.choice([i for i in active if node_levels[i] > node_levels[to_activate] and node_levels[i] - node_levels[to_activate] <= G.levels_back])
+            - errored out one time, need to check if possible active is empty, in which case simply return G
+
+    Observations:
+        - 
     
