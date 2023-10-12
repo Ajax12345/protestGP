@@ -183,5 +183,5 @@ Experiment 9:
             - errored out one time, need to check if possible active is empty, in which case simply return G
 
     Observations:
-        - 
+        - Steady increase in complexity!
     
