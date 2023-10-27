@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import collections, json, os
+import collections, json, os, math
 
-def plot_main_complexities(folder = 'comp_matrices_mutations'):
+def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max_y = None):
     results = collections.defaultdict(dict)
     fitness_results = collections.defaultdict(dict)
     for i in os.listdir(folder):
@@ -33,6 +33,16 @@ def plot_main_complexities(folder = 'comp_matrices_mutations'):
     plt.ylabel('Median complexity')
     plt.title('Complexity')
     plt.legend()
+    min_y_lim = min(min(b) for _, b in final.items())
+    max_y_lim = math.ceil(max(max(b) for _, b in final.items()))
+    if min_y is not None:
+        min_y_lim = min(min_y_lim, min_y)
+    
+    if max_y is not None:
+        max_y_lim = max(max_y_lim, max_y)
+
+
+    plt.ylim(min_y_lim, max_y_lim)
     plt.show()
 
     if fitness_results:
@@ -50,6 +60,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations'):
         plt.legend()
         plt.show()
 
+    return min_y_lim, max_y_lim
 
 
 if __name__ == '__main__':
@@ -59,7 +70,8 @@ if __name__ == '__main__':
     #plot_main_complexities('o1')
     #plot_main_complexities('o3')
     #plot_main_complexities('o7')
-    plot_main_complexities('o9')
+    y1, y2 = plot_main_complexities('o9')
+    _ = plot_main_complexities('o10', y1, y2)
     #plot_main_complexities('control_graphs')
     '''
     comp_matrices_mutations

@@ -192,6 +192,49 @@ def DEFAULT_GENOTYPE_1():
         ]
     )
 
+def DEFAULT_GENOTYPE_2():
+    return Genotype(
+        inputs = [
+            node.Input(int, 0),
+            node.Input(int, 1),
+            node.Input(int, 2),
+            node.Input(int, 3)
+        ],
+        constants = [
+        ],
+        gates = [
+            node.operator.OR(4, inputs=[3, 0]),
+            node.operator.NAND(5, inputs=[3, 2]),
+            node.operator.OR(6, inputs=[1, 2]),
+            node.operator.NOR(7, inputs=[3, 2]),
+            node.operator.NOR(8, inputs=[6, 5]),
+            node.operator.NAND(9, inputs=[3, 0]),
+            node.operator.NOR(10, inputs=[4, 6]),
+            node.operator.NOR(11, inputs=[2, 7]),
+            node.operator.NAND(12, inputs=[1, 11]),
+            node.operator.NOR(13, inputs=[8, 5]),
+            node.operator.OR(14, inputs=[5, 11]),
+            node.operator.NAND(15, inputs=[7, 9]),
+            node.operator.AND(16, inputs=[5, 12]),
+            node.operator.AND(17, inputs=[9, 4]),
+            node.operator.AND(18, inputs=[5, 8]),
+            node.operator.NOR(19, inputs=[6, 8])
+        ],
+        outputs = [
+            node.Output(int, 20, 17),
+            node.Output(int, 21, 18),
+            node.Output(int, 22, 19),
+            node.Output(int, 23, 16)
+        ],
+        params = {
+            'inputs':4,
+            'constants':0,
+            'depth':4,
+            'outputs':4,
+            'levels_back':3
+        }
+    )
+
 class Protestor(Actor):
     """
     a: 0.8
@@ -291,6 +334,7 @@ class Environment:
             sum_fitness = sum(i.score + (abs(min_score) if min_score < 0 else 0) for i in agent.population)
             if not sum_fitness:
                 return 0, a_name
+                #sum_fitness = 1
 
             #print(a_name, [i.score for i in agent.population])
             fitness_probability = [(i.score + (abs(min_score) if min_score < 0 else 0))/sum_fitness for i in agent.population]
@@ -410,6 +454,7 @@ class Environment:
         return Agent(a_func)
 
 if __name__ == '__main__':
+    '''
     print('Protestor random trait', Protestor.random_trait())
     print('Police random trait', Police.random_trait())
     print('CounterProtestor random trait', CounterProtestor.random_trait())
@@ -417,7 +462,10 @@ if __name__ == '__main__':
     g = DEFAULT_GENOTYPE_1()
     g.render()
     '''
+    '''
     for _ in range(10):
         g.render()
         g.mutate()
     '''
+    g = DEFAULT_GENOTYPE_2()
+    g.render()

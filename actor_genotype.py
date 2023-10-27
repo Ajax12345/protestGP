@@ -292,7 +292,10 @@ class Genotype:
                         max(i.name for i in G.kwargs['gates']),
                         max(i.name for i in G.kwargs['outputs'])) + 1
             
-            n_g_level = random.choice([i for i in levels if i != min(levels) and i != max(levels)])
+            if not (t_l:=[i for i in levels if i != min(levels) and i != max(levels)]):
+                return G
+
+            n_g_level = random.choice(t_l)
             inputs = random.sample([a for a, b in node_levels.items() if b < n_g_level and n_g_level - b <= G.levels_back], 2)
             new_gate = _gate(n_g_ID, inputs = inputs)
             G.kwargs['gates'].append(new_gate)
@@ -303,7 +306,10 @@ class Genotype:
 
         to_activate = random.choice([*inactive])
         #print('activating this node', to_activate)
-        link_to = random.choice([i for i in active if node_levels[i] > node_levels[to_activate] and node_levels[i] - node_levels[to_activate] <= G.levels_back])
+        if not (t_l:=[i for i in active if node_levels[i] > node_levels[to_activate] and node_levels[i] - node_levels[to_activate] <= G.levels_back]):
+            return G
+
+        link_to = random.choice(t_l)
         #print('linking to', link_to)
         for gate in G.kwargs['gates']:
             if gate.name == link_to:
@@ -752,11 +758,25 @@ if __name__ == '__main__':
 
         plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
         plt.show()
+
+    def compute_node_addition():
+        c = []
+        for _ in range(100):
+            g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+            C_m = {'c':0}
+            for _ in range(1000):
+                g.mutate_v2(C_m = C_m)
+
+            c.append(C_m['c'])
+
+        print(c)
+        print('C_m count', sum(c)/len(c))
+        #16.79
     
     
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
-    test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
+    #test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
     
     
     #test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1), 'mutate_v2')
@@ -771,3 +791,7 @@ if __name__ == '__main__':
     #g.render()
     #g.mutate_v2(choice = 1)
     #g.render()
+    g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+    print(g.complexity)
+    print(g)
+    g.render()

@@ -171,6 +171,10 @@ Experiment 9:
         - choose nodes to activate and deactivate based on positional probabilities
             https://www.annualreviews.org/doi/full/10.1146/annurev.micro.57.030502.090855
             https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7
+            https://www.google.com/search?q=adaptive+mutation&oq=adaptive+mutation&gs_lcrp=EgZjaHJvbWUqDAgAEAAYFBiHAhiABDIMCAAQABgUGIcCGIAEMg0IARAAGIMBGLEDGIAEMg0IAhAuGK8BGMcBGIAEMg0IAxAAGIMBGLEDGIAEMg0IBBAAGIMBGLEDGIAEMgcIBRAAGIAEMgYIBhBFGD0yBggHEEUYPdIBCDIxMTVqMGo0qAIAsAIA&sourceid=chrome&ie=UTF-8
+            https://browse.arxiv.org/pdf/2102.11995.pdf
+            https://www.nature.com/articles/35080556
+
 
         - Based on this paper: https://www.scitepress.org/Papers/2021/106400/106400.pdf
             - it might be best to initialize population with a single, optimal manually-created phenotype for each actor
@@ -182,6 +186,39 @@ Experiment 9:
         - link_to = random.choice([i for i in active if node_levels[i] > node_levels[to_activate] and node_levels[i] - node_levels[to_activate] <= G.levels_back])
             - errored out one time, need to check if possible active is empty, in which case simply return G
 
+        - Normalize fitnesses
+
+        - Find out how often a new node is created, when all others are activated
+
     Observations:
         - Steady increase in complexity!
+    
+
+Experiment 10:
+    Oct 23 @ 7:43 PM
+
+    Determining the average number of times an activation mutation must create a new node
+        - 100 Genotype.random_genotype_m1(4, 0, 4, 4, 3) created, and for each genotype, 1000 random mutations performed
+        
+    Fixed index error bugs on link_to and n_g_level random.choice selections
+
+    Observations:
+        - On average, the genotype was completely activated only 16.79/1000 = 0.01679 percent of the time
+
+
+Experiment 11:
+    Oct 24 @ 5:47 PM
+
+    Every instantiated has the same Genotype.random_genotype_m1(4, 0, 4, 4, 3) genotype
+        - DEFAULT_GENOTYPE_2()
+        - 5000 iterations
+
+    Output folder: o10
+
+    Future experiments:
+        - run control on random genotype creation
+
+    Observations:
+        - A single, manually selected/curated genotype for every actor is not a driver of complexity at all
+
     
