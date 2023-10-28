@@ -221,4 +221,16 @@ Experiment 11:
     Observations:
         - A single, manually selected/curated genotype for every actor is not a driver of complexity at all
 
+
+Experiment 12:
+    Oct 27 @ 12:07 PM
+
+    Running random drift control
+        -  Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) for every actor
+        - 5000 iterations
+
+
+    Output folder: o11
+
+    
     

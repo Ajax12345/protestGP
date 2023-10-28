@@ -333,8 +333,8 @@ class Environment:
             min_score = min(i.score for i in agent.population)
             sum_fitness = sum(i.score + (abs(min_score) if min_score < 0 else 0) for i in agent.population)
             if not sum_fitness:
-                return 0, a_name
-                #sum_fitness = 1
+                #return 0, a_name
+                sum_fitness = 1
 
             #print(a_name, [i.score for i in agent.population])
             fitness_probability = [(i.score + (abs(min_score) if min_score < 0 else 0))/sum_fitness for i in agent.population]

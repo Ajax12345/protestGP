@@ -1,0 +1,18 @@
+Evolving responsively: adaptive mutation
+    - https://www.nature.com/articles/35080556
+    - "The data above do not address the controversial possibility that mutations might be directed preferentially to those genes that could favour survival in the selective environment"
+    - "The idea that mutations are directed to, or near to, genes that could confer an advantage if mutated (directed mutation hypothesis, Box 1) almost returned last year with the proposal that most Lac+ mutants do not arise in the hypermutable subpopulation"
+    - "Second, the idea that there are two mutable populations (a minor hypermutable one that generates selected and other mutations, and a major one that produces selected mutations with few unselected mutations)59,82 was proposed to explain a greater than expected number of triple mutants"
+    - "This indicates that some sites or areas are 'hot', whereas others are 'cold' for hypermutation"
+        - "hot" sites => areas where a mutation is more likely to occur than "cold"
+
+    - idea: spawn mutations, where a subtree of the input graph can be cloned and copied into the graph elsewhere
+
+        - "adaptive amplification"
+
+
+A study of dynamic populations in geometric semantic genetic programming
+    - https://www.sciencedirect.com/science/article/pii/S0020025523010988
+    "Instead of removing the worst individuals according to fitness, the individuals were divided into two niches, both of the same size (half of the current population size each). The first niche was composed of the best individuals of the population and its closest neighbours in the population. The second niche was made of the remaining individuals. Then a set of closest neighbours of the best individual of the second niche were removed. A similar approach was presented in [28], where a slightly different equation was used to decide the number of individuals to be removed at each generation."
+
+    - idea: look at complexity that arises from agent defection
