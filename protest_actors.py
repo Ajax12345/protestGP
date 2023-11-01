@@ -337,6 +337,7 @@ class Environment:
                 sum_fitness = 1
 
             #print(a_name, [i.score for i in agent.population])
+            #USE THE SAME SEED FOR RANDOM.CHOICE!!
             fitness_probability = [(i.score + (abs(min_score) if min_score < 0 else 0))/sum_fitness for i in agent.population]
             new_population = []
             for _ in range(agent.size):

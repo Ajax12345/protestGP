@@ -229,6 +229,16 @@ Experiment 12:
         -  Random Genotype.random_genotype_m1(4, 0, 4, 4, 3) for every actor
         - 5000 iterations
 
+    Future experiments:
+        - Use a constant random seed for all experiments
+        - Scale fitness based on a scale from 0 to 1, where 1 represents the maximum possible fitness to attain, and 0 the lowest
+            - should be able to see where agent falls on this skill
+
+        - Inspect individual member of the population and see if drive in complexity is associated with an increase in fitness, performance, etc.
+        
+        - Think about paper?
+        
+        - Change around payoff matrix
 
     Output folder: o11
 
