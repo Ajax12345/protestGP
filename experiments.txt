@@ -242,5 +242,21 @@ Experiment 12:
 
     Output folder: o11
 
+Experiment 13:
+    Nov 1 @ 2:44 PM
+
+    New fitness calculation
+        -  expressed as fraction of achieved fitness over possible best fitness
+
+    Future experiments:
+        - Use a random seed generated for each simulation run
+        - Whenever a mutation is to occur, with a very small probability, change the number of levels back of the circuit (1 <= level < num_layers)
+        - Change payoff matrix
+
+    Output folder: o12
+
+    Observations:
+        - no remarkable increase in complexity
+
     
     

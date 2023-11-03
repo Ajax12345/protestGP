@@ -71,10 +71,10 @@ if __name__ == '__main__':
     #plot_main_complexities('o3')
     #plot_main_complexities('o7')
 
-    y1, y2 = plot_main_complexities('o9')
+    y1, y2 = plot_main_complexities('o12')
     #_ = plot_main_complexities('o10', y1, y2)
     
-    _ = plot_main_complexities('o11', y1, y2)
+    #_ = plot_main_complexities('o11', y1, y2)
     #plot_main_complexities('control_graphs')
     '''
     comp_matrices_mutations

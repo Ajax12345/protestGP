@@ -776,7 +776,7 @@ if __name__ == '__main__':
     
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
-    #test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
+    test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
     
     
     #test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1), 'mutate_v2')
@@ -791,7 +791,9 @@ if __name__ == '__main__':
     #g.render()
     #g.mutate_v2(choice = 1)
     #g.render()
+    '''
     g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
     print(g.complexity)
     print(g)
     g.render()
+    '''

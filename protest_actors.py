@@ -38,11 +38,13 @@ class Actor:
         self.genotype = self.build_genotype()
         self._outputs = {}
         self.score = 0
+        self.optimal_score = 0
 
     def reset(self) -> 'Actor':
         self.genotype = self.build_genotype()
         self._outputs = {}
         self.score = 0
+        self.optimal_score = 0
         return self
 
     def mutate(self, prob:float = 0.01) -> None:
@@ -303,6 +305,7 @@ class Environment:
 
     def run_interactions(self) -> None:
         print('-'*40)
+        matrix_cache = {}
         for (a1, a2), [agent1, agent2, matrix] in self.interactions.items():
             for actor1 in agent1.population:
                 for actor2 in agent2.population:
@@ -313,19 +316,28 @@ class Environment:
                     a1_payout, a2_payout = matrix[a1_decision][a2_decision]
                     actor1.score += a1_payout
                     actor2.score += a2_payout
+                    if (s_c:=str(matrix)) not in matrix_cache:
+                        matrix_cache[s_c] = (max(a for row in matrix for a, _ in row), max(b for row in matrix for _, b in row))
+                    
+                    a_opt, b_opt = matrix_cache[s_c]
+                    actor1.optimal_score += a_opt
+                    actor2.optimal_score += b_opt
                     #print('score after', [actor1.score, actor2.score])
 
     def increment_generation(self) -> None:
         self.generation += 1
 
-    def fitness_score_offsets(self, population:typing.List['Aget']) -> typing.List[float]:
+    def fitness_score_offsets(self, population:typing.List['Agent']) -> typing.List[float]:
         min_score = min(i.score for i in population)
         return [i.score + (abs(min_score) if min_score < 0 else 0) for i in population]
+
+    def fractional_fitness_score(self, population:typing.List['Agent']) -> typing.List:
+        return sorted([(i.score if i.score >= 0 else 0)/i.optimal_score for i in population])
 
     def compute_complexities(self, c_func:typing.Callable = statistics.median) -> None:
         self.generation_complexities[self.generation] = {
                 a:{'complexity':c_func(sorted([i.complexity() for i in b.population])),
-                    'fitness':c_func(sorted(self.fitness_score_offsets(b.population)))}
+                    'fitness':c_func(self.fractional_fitness_score(b.population))}
             for a, b in self.agents.items()}
 
     def reproduction(self, control:bool = False) -> None:
@@ -348,6 +360,7 @@ class Environment:
 
                 parent.mutate()
                 parent.score = 0
+                parent.optimal_score = 0
                 new_population.append(parent)
 
             agent.population = new_population
