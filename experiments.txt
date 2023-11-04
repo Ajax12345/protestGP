@@ -258,5 +258,20 @@ Experiment 13:
     Observations:
         - no remarkable increase in complexity
 
+Experiment 14:
+    Nov 3 @ 10:22 AM
+
+    Run same genotype as before, but with one level back
+
+    Future experiments:
+        - Whenever a mutation is to occur, randomly change the circuit's levels back
+        - update payoff matrix
+
+    Output folder: o13
+
+    Observations:
+        - with the exception of the counterprotestors, complexity is driven up!
+
+
     
     
