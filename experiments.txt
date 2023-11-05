@@ -272,6 +272,23 @@ Experiment 14:
     Observations:
         - with the exception of the counterprotestors, complexity is driven up!
 
+Experiment 15:
+    Nov 4 @ 11:06 AM
+
+    Running Random Genotype.random_genotype_m1(4, 0, 4, 4, 1) for every actor
+        - initially, one level back
+        - on mutation, with a 25% probability, change the number of levels back to be 1 <= levels < depth
+
+
+    Future experiments:
+        - update payoff matrix
+
+    Observations:
+        - even greater drive in complexity!
+
+    Output folder: o14
+
+
 
     
     

@@ -71,7 +71,7 @@ if __name__ == '__main__':
     #plot_main_complexities('o3')
     #plot_main_complexities('o7')
 
-    y1, y2 = plot_main_complexities('o13')
+    y1, y2 = plot_main_complexities('o14')
     _ = plot_main_complexities('o9', y1, y2)
     
     #_ = plot_main_complexities('o11', y1, y2)

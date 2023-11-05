@@ -161,6 +161,14 @@ class Genotype:
     def levels_back(self) -> int:
         return self.kwargs.get('params', {}).get('levels_back')
 
+    @levels_back.setter
+    def levels_back(self, l_b:int) -> None:
+        self.kwargs['params']['levels_back'] = l_b
+
+    @property
+    def depth(self) -> int:
+        return self.kwargs.get('params', {}).get('depth')
+
     def __enter__(self) -> 'Genotype':
         return
 
@@ -364,6 +372,9 @@ class Genotype:
         self.reset()
         choices = [1, 2, 3, 4] if choice is None else [choice]
 
+        if random.random() <= 0.25:
+            self.levels_back = random.choice([*range(1, self.depth)])
+            
         #TODO: cut down on nuisance and noise mutations (https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7)
         #https://www.annualreviews.org/doi/full/10.1146/annurev.micro.57.030502.090855
         if (mutation:=random.choice(choices)) == 1:
