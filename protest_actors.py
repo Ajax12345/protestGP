@@ -248,7 +248,7 @@ class Protestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
     
 
 class Police(Actor):
@@ -262,7 +262,7 @@ class Police(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 class CounterProtestor(Actor):
     """
@@ -275,7 +275,7 @@ class CounterProtestor(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Public(Actor):
@@ -289,7 +289,7 @@ class Public(Actor):
     def build_genotype(self) -> typing.Any:
         #return Genotype.random_genotype(4, 2, 4)
         #return copy.deepcopy(DEFAULT_GENOTYPE_1())
-        return Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+        return Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
 
 class Environment:
@@ -354,7 +354,11 @@ class Environment:
             new_population = []
             for _ in range(agent.size):
                 if not control:
-                    parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
+                    try:
+                        parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
+                    except:
+                        print('got fitness issue', fitness_probability)
+                        parent = copy.deepcopy(random.choice(agent.population))
                 else:
                     parent = copy.deepcopy(random.choice(agent.population))
 

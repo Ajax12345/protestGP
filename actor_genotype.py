@@ -372,8 +372,10 @@ class Genotype:
         self.reset()
         choices = [1, 2, 3, 4] if choice is None else [choice]
 
+        '''
         if random.random() <= 0.25:
             self.levels_back = random.choice([*range(1, self.depth)])
+        '''
             
         #TODO: cut down on nuisance and noise mutations (https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-023-00959-7)
         #https://www.annualreviews.org/doi/full/10.1146/annurev.micro.57.030502.090855
@@ -773,7 +775,7 @@ if __name__ == '__main__':
     def compute_node_addition():
         c = []
         for _ in range(100):
-            g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+            g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
             C_m = {'c':0}
             for _ in range(1000):
                 g.mutate_v2(C_m = C_m)
@@ -783,11 +785,12 @@ if __name__ == '__main__':
         print(c)
         print('C_m count', sum(c)/len(c))
         #16.79
+        #19.01 on random levels back adjustment
     
     
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
-    test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
+    #test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
     
     
     #test_mutation_effect(Genotype.random_genotype(5, 2, 5, 1), 'mutate_v2')
@@ -808,3 +811,4 @@ if __name__ == '__main__':
     print(g)
     g.render()
     '''
+    compute_node_addition()

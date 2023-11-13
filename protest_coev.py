@@ -25,12 +25,19 @@ Protestors.interaction(CounterProtestors, [[(2, 1), (0, 1)], [(2, -1), (3, 3)]])
 Public.interaction(CounterProtestors, [[(1, -1), (0, -1)], [(-1, 0), (3, 3)]])
 CounterProtestors.interaction(Police, [[(-3, -3), (-1, 1)], [(1, -1), (3, 3)]])
 '''
+'''
 Protestors.interaction(Police, [[(-3, -3), (3, 3)], [(3, 3), (-3, -3)]])
 Protestors.interaction(Public, [[(3, 3), (-3, -3)], [(-3, -3), (3, 3)]])
 Protestors.interaction(CounterProtestors, [[(-3, -3), (3, 3)], [(3, 3), (-3, -3)]])
 Public.interaction(CounterProtestors, [[(3, 3), (-3, -3)], [(-3, -3), (3, 3)]])
 CounterProtestors.interaction(Police, [[(3, 3), (-3, -3)], [(-3, -3), (3, 3)]])
+'''
 
+Protestors.interaction(Police, [[(2, 1), (-1, 2)], [(2, -2), (-1, 2)]])
+Protestors.interaction(Public, [[(-2, -1), (-2, 2)], [(2, -2), (3, 3)]])
+Protestors.interaction(CounterProtestors, [[(1, 1), (-1, 2)], [(2, -1), (2, 1)]])
+Public.interaction(CounterProtestors, [[(2, 1), (0, 1)], [(-1, -1), (-1, 2)]])
+CounterProtestors.interaction(Police, [[(-1, -1), (-1, 1)], [(2, -1), (2, 2)]])
 
 
 def simulate_generation(gen_num:int, control:bool) -> bool:

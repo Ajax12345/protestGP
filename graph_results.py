@@ -36,7 +36,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max
     min_y_lim = min(min(b) for _, b in final.items())
     max_y_lim = math.ceil(max(max(b) for _, b in final.items()))
     if min_y is not None:
-        min_y_lim = min(min_y_lim, min_y)
+        min_y_lim = max(min_y_lim, min_y)
     
     if max_y is not None:
         max_y_lim = max(max_y_lim, max_y)
@@ -70,10 +70,13 @@ if __name__ == '__main__':
     #plot_main_complexities('o1')
     #plot_main_complexities('o3')
     #plot_main_complexities('o7')
-
+    '''
     y1, y2 = plot_main_complexities('o14')
-    _ = plot_main_complexities('o9', y1, y2)
-    
+    y1, y2 = plot_main_complexities('o13')
+    _ = plot_main_complexities('o9')
+    '''
+    plot_main_complexities('o9')
+    plot_main_complexities('o15')
     #_ = plot_main_complexities('o11', y1, y2)
     #plot_main_complexities('control_graphs')
     '''
