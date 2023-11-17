@@ -291,8 +291,8 @@ Experiment 15:
 Experiment 16:
     Nov 12 @ 9:19 AM
 
-    Running Genotype.random_genotype_m1(4, 0, 4, 4, 1) on new payoff matrices
-
+    Running Genotype.random_genotype_m1(4, 0, 4, 4, 3) on new payoff matrices
+    
 
     Output folder: o15
 

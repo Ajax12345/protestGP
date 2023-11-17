@@ -811,4 +811,6 @@ if __name__ == '__main__':
     print(g)
     g.render()
     '''
-    compute_node_addition()
+    #compute_node_addition()
+    g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
+    g.render()

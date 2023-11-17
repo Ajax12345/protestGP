@@ -75,7 +75,11 @@ if __name__ == '__main__':
     y1, y2 = plot_main_complexities('o13')
     _ = plot_main_complexities('o9')
     '''
+    '''
     plot_main_complexities('o9')
+    plot_main_complexities('o13')
+    plot_main_complexities('o14')
+    '''
     plot_main_complexities('o15')
     #_ = plot_main_complexities('o11', y1, y2)
     #plot_main_complexities('control_graphs')
