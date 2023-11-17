@@ -296,7 +296,12 @@ Experiment 16:
 
     Output folder: o15
 
+Experiment 17:
+    Nov 17 @ 2:47 PM
 
+    Running Genotype.random_genotype_m1(4, 0, 4, 4, 3)
 
+        - verbose output of all interactions, traits, circuits, etc.
     
-    
+
+    Output folder: o16   

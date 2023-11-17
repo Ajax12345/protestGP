@@ -614,6 +614,14 @@ class Genotype:
                 'depth':depth, 
                 'outputs':outputs}
         )
+
+    def to_json(self) -> dict:
+        return {
+            'inputs':[i.name for i in self.kwargs['inputs']],
+            'gates':[[i.name, i.__class__.__name__, i.inputs] for i in self.kwargs['gates']],
+            'outputs':[i.name for i in self.kwargs['outputs']],
+            'params':self.kwargs['params']
+        }
         
     def __repr__(self) -> str:
         return json.dumps({a:[*map(repr, b)] for a, b in self.kwargs.items()}, indent=4)
@@ -813,4 +821,5 @@ if __name__ == '__main__':
     '''
     #compute_node_addition()
     g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
-    g.render()
+    #g.render()
+    print(g.to_json())

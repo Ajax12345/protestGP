@@ -33,12 +33,16 @@ class Actor:
     persuasiveness
     agreeableness
     """
-    def __init__(self) -> None:
+    def __init__(self, env = None) -> None:
         self.traits = self.__class__.random_trait()
         self.genotype = self.build_genotype()
         self._outputs = {}
         self.score = 0
         self.optimal_score = 0
+        self.id = None
+        if env is not None:
+            self.id = max([*env.agent_bindings]+[0]) + 1
+            env.agent_bindings[self.id] = self
 
     def reset(self) -> 'Actor':
         self.genotype = self.build_genotype()
@@ -295,20 +299,41 @@ class Public(Actor):
 class Environment:
     def __init__(self) -> None:
         self.agents = {}
+        self.agent_bindings = {}
         self.interactions = {}
         self.generation = 1
         self.generation_complexities = {}
+        self.trait_actor_associations = {self.generation:collections.defaultdict(dict)}
+        self.actor_decision_evolutions = {self.generation:collections.defaultdict(dict)}
 
     def activate(self, outputs:typing.List[int]) -> int:
         '''majority voting'''
         return max(collections.Counter(outputs).items(), key=lambda x:x[1])[0]
+
+    def update_trait_associations(self, a_name:str, a_traits:typing.List[int]) -> None:
+        if a_name not in self.trait_actor_associations[self.generation][str(a_traits)]:
+            self.trait_actor_associations[self.generation][str(a_traits)][a_name] = 0
+
+        self.trait_actor_associations[self.generation][str(a_traits)][a_name] += 1
+
+    def update_actor_evolutions(self, a1_name:str, a2_traits:typing.List[int], a1_decision:int, a1_payout:int, a1_optimal:int) -> None:
+        if a1_name not in self.actor_decision_evolutions[self.generation]:
+            self.actor_decision_evolutions[self.generation][a1_name] = collections.defaultdict(dict)
+
+        if str(a2_traits) not in self.actor_decision_evolutions[self.generation][a1_name]:
+            self.actor_decision_evolutions[self.generation][a1_name][str(a2_traits)] = collections.defaultdict(int)
+        
+        self.actor_decision_evolutions[self.generation][a1_name][str(a2_traits)][str([a1_decision, a1_payout, a1_optimal])] += 1
+
 
     def run_interactions(self) -> None:
         print('-'*40)
         matrix_cache = {}
         for (a1, a2), [agent1, agent2, matrix] in self.interactions.items():
             for actor1 in agent1.population:
+                self.update_trait_associations(a1, actor1.traits)
                 for actor2 in agent2.population:
+                    self.update_trait_associations(a2, actor2.traits)
                     a1_decision = self.activate(actor1.genotype(*actor2.traits))
                     a2_decision = self.activate(actor2.genotype(*actor1.traits))
                     actor1._outputs[tuple(actor2.traits)] = a1_decision
@@ -322,10 +347,35 @@ class Environment:
                     a_opt, b_opt = matrix_cache[s_c]
                     actor1.optimal_score += a_opt
                     actor2.optimal_score += b_opt
+
+                    #self.update_actor_evolutions(a1, actor2.traits, a1_decision, a1_payout, a_opt)
+                    #self.update_actor_evolutions(a2, actor1.traits, a2_decision, a2_payout, b_opt)
+
+                    if (k:=str((a1, a2))) not in self.generation_population_details[self.generation]:
+                        self.generation_population_details[self.generation][k] = []
+                
+                    self.generation_population_details[self.generation][k].append({
+                        a1:{
+                            'id':actor1.id,
+                            'traits':actor1.traits,
+                            'decision':a1_decision,
+                            'payout':a1_payout,
+                            'optimal_payout':a_opt
+                        },
+                        a2:{
+                            'id':actor2.id,
+                            'traits':actor2.traits,
+                            'decision':a2_decision,
+                            'payout':a2_payout,
+                            'optimal_payout':b_opt
+                        }
+                    })
                     #print('score after', [actor1.score, actor2.score])
 
     def increment_generation(self) -> None:
         self.generation += 1
+        self.trait_actor_associations[self.generation] = collections.defaultdict(dict)
+        self.actor_decision_evolutions[self.generation] = collections.defaultdict(dict)
 
     def fitness_score_offsets(self, population:typing.List['Agent']) -> typing.List[float]:
         min_score = min(i.score for i in population)
@@ -377,8 +427,12 @@ class Environment:
                 self.generation_complexities = json.load(f)
 
         else:
-            with open(f"run_complexities_{proc}_{str(datetime.datetime.now()).replace(' ', 'T').replace('.', '')}.json", 'a') as f:
+            file_ext = f"{proc}_{str(datetime.datetime.now()).replace(' ', 'T').replace('.', '')}.json"
+            with open(f"run_complexities_{file_ext}", 'a') as f:
                 json.dump(self.generation_complexities, f)
+
+            with open(f'generation_evolutions_{file_ext}', 'a') as f:
+                json.dump(self.generation_population_details, f)
 
         agent_complexities = collections.defaultdict(list)
         agent_fitness = collections.defaultdict(list)
