@@ -5,7 +5,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max
     results = collections.defaultdict(dict)
     fitness_results = collections.defaultdict(dict)
     for i in os.listdir(folder):
-        if i.endswith('.json'):
+        if i.endswith('.json') and i.startswith('run_complexities'):
             with open(os.path.join(folder, i)) as f:
                 data = json.load(f)
                 for generation, actors in data.items():
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     plot_main_complexities('o13')
     plot_main_complexities('o14')
     '''
-    plot_main_complexities('o16')
+    plot_main_complexities('o15')
     #_ = plot_main_complexities('o11', y1, y2)
     #plot_main_complexities('control_graphs')
     '''

@@ -348,9 +348,9 @@ class Environment:
                     actor1.optimal_score += a_opt
                     actor2.optimal_score += b_opt
 
-                    #self.update_actor_evolutions(a1, actor2.traits, a1_decision, a1_payout, a_opt)
-                    #self.update_actor_evolutions(a2, actor1.traits, a2_decision, a2_payout, b_opt)
-
+                    self.update_actor_evolutions(a1, actor2.traits, a1_decision, a1_payout, a_opt)
+                    self.update_actor_evolutions(a2, actor1.traits, a2_decision, a2_payout, b_opt)
+                    '''
                     if (k:=str((a1, a2))) not in self.generation_population_details[self.generation]:
                         self.generation_population_details[self.generation][k] = []
                 
@@ -370,6 +370,7 @@ class Environment:
                             'optimal_payout':b_opt
                         }
                     })
+                    '''
                     #print('score after', [actor1.score, actor2.score])
 
     def increment_generation(self) -> None:
@@ -408,6 +409,8 @@ class Environment:
                         parent = copy.deepcopy(agent.population[np.random.choice(agent.size, p = fitness_probability)])
                     except:
                         print('got fitness issue', fitness_probability)
+                        print('more error info', min_score, sum_fitness)
+                        print([i.score for i in agent.population])
                         parent = copy.deepcopy(random.choice(agent.population))
                 else:
                     parent = copy.deepcopy(random.choice(agent.population))
@@ -432,7 +435,7 @@ class Environment:
                 json.dump(self.generation_complexities, f)
 
             with open(f'generation_evolutions_{file_ext}', 'a') as f:
-                json.dump(self.generation_population_details, f)
+                json.dump({'trait_actor_associations':self.trait_actor_associations, 'actor_decision_evolutions':self.actor_decision_evolutions}, f)
 
         agent_complexities = collections.defaultdict(list)
         agent_fitness = collections.defaultdict(list)
