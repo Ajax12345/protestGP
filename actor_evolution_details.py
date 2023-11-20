@@ -67,22 +67,23 @@ def plot_stacked_bar(data, series_labels, category_labels=None,
         plt.grid()
 
 def evolution_exploration() -> None:
-    with open('generation_evolutions_1_2023-11-17T22:10:59387742.json') as f:
+    with open('generation_evolutions_1_2023-11-18T14:39:15689721.json') as f:
         raw_data = json.load(f)
         data = collections.defaultdict(dict)
         for a, b in raw_data['trait_actor_associations'].items():
-            for trait, vals in b.items():
-                for actor, c in vals.items():
-                    if actor not in data[trait]:
-                        data[trait][actor] = []
-                    
-                    data[trait][actor].append(c)
+            if a == '1':
+                for trait, vals in raw_data['trait_actor_associations']['1'].items():
+                    for actor, c in vals.items():
+                        if actor not in data[trait]:
+                            data[trait][actor] = []
+                        
+                        data[trait][actor].append(c)
         
         data = {a:{j:sum(k)/len(k) for j, k in b.items()} for a, b in data.items()}
         
         last = np.zeros(len(TRAITS))
         for a, b in COLORS.items():
-            n_l = [data[j][a] for j in TRAITS]
+            n_l = [data.get(j, {}).get(a, 0) for j in TRAITS]
             plt.bar([*TRAITS.values()], n_l, bottom = last, color = b, label = a)
 
             last += np.array(n_l)

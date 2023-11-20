@@ -310,30 +310,35 @@ class Environment:
         '''majority voting'''
         return max(collections.Counter(outputs).items(), key=lambda x:x[1])[0]
 
-    def update_trait_associations(self, a_name:str, a_traits:typing.List[int]) -> None:
+    def update_trait_associations(self, a_name:str, a_traits:typing.List[int], a_id:int) -> None:
         if a_name not in self.trait_actor_associations[self.generation][str(a_traits)]:
-            self.trait_actor_associations[self.generation][str(a_traits)][a_name] = 0
+            self.trait_actor_associations[self.generation][str(a_traits)][a_name] = set()
 
-        self.trait_actor_associations[self.generation][str(a_traits)][a_name] += 1
+        self.trait_actor_associations[self.generation][str(a_traits)][a_name].add(a_id)
 
-    def update_actor_evolutions(self, a1_name:str, a2_traits:typing.List[int], a1_decision:int, a1_payout:int, a1_optimal:int) -> None:
+    def update_actor_evolutions(self, a1_name:str, a2_name:str, a2_traits:typing.List[int], a1_decision:int, a1_payout:int, a1_optimal:int) -> None:
         if a1_name not in self.actor_decision_evolutions[self.generation]:
             self.actor_decision_evolutions[self.generation][a1_name] = collections.defaultdict(dict)
 
+        '''
         if str(a2_traits) not in self.actor_decision_evolutions[self.generation][a1_name]:
             self.actor_decision_evolutions[self.generation][a1_name][str(a2_traits)] = collections.defaultdict(int)
         
         self.actor_decision_evolutions[self.generation][a1_name][str(a2_traits)][str([a1_decision, a1_payout, a1_optimal])] += 1
+        '''
+        if a2_name not in self.actor_decision_evolutions[self.generation][a1_name]:
+            self.actor_decision_evolutions[self.generation][a1_name][a2_name] = collections.defaultdict(int)
 
+        self.actor_decision_evolutions[self.generation][a1_name][a2_name][a1_decision] += 1
 
     def run_interactions(self) -> None:
         print('-'*40)
         matrix_cache = {}
         for (a1, a2), [agent1, agent2, matrix] in self.interactions.items():
             for actor1 in agent1.population:
-                self.update_trait_associations(a1, actor1.traits)
+                self.update_trait_associations(a1, actor1.traits, actor1.id)
                 for actor2 in agent2.population:
-                    self.update_trait_associations(a2, actor2.traits)
+                    self.update_trait_associations(a2, actor2.traits, actor2.id)
                     a1_decision = self.activate(actor1.genotype(*actor2.traits))
                     a2_decision = self.activate(actor2.genotype(*actor1.traits))
                     actor1._outputs[tuple(actor2.traits)] = a1_decision
@@ -348,8 +353,8 @@ class Environment:
                     actor1.optimal_score += a_opt
                     actor2.optimal_score += b_opt
 
-                    self.update_actor_evolutions(a1, actor2.traits, a1_decision, a1_payout, a_opt)
-                    self.update_actor_evolutions(a2, actor1.traits, a2_decision, a2_payout, b_opt)
+                    self.update_actor_evolutions(a1, a2, actor2.traits, a1_decision, a1_payout, a_opt)
+                    self.update_actor_evolutions(a2, a1, actor1.traits, a2_decision, a2_payout, b_opt)
                     '''
                     if (k:=str((a1, a2))) not in self.generation_population_details[self.generation]:
                         self.generation_population_details[self.generation][k] = []
@@ -435,7 +440,7 @@ class Environment:
                 json.dump(self.generation_complexities, f)
 
             with open(f'generation_evolutions_{file_ext}', 'a') as f:
-                json.dump({'trait_actor_associations':self.trait_actor_associations, 'actor_decision_evolutions':self.actor_decision_evolutions}, f)
+                json.dump({'trait_actor_associations':{a:{j:{K:len(J) for K, J in k.items()} for j, k in b.items()} for a, b in self.trait_actor_associations.items()}, 'actor_decision_evolutions':self.actor_decision_evolutions}, f)
 
         agent_complexities = collections.defaultdict(list)
         agent_fitness = collections.defaultdict(list)
@@ -529,18 +534,18 @@ class Environment:
         return Agent(a_func)
 
 if __name__ == '__main__':
+    
+    print('Protestor random trait', Protestor().traits)
+    print('Police random trait', Police().traits)
+    print('CounterProtestor random trait', CounterProtestor().traits)
+    print('Public random trait', Public().traits)
+
     '''
-    print('Protestor random trait', Protestor.random_trait())
-    print('Police random trait', Police.random_trait())
-    print('CounterProtestor random trait', CounterProtestor.random_trait())
-    print('Public random trait', Public.random_trait())
     g = DEFAULT_GENOTYPE_1()
     g.render()
-    '''
-    '''
     for _ in range(10):
         g.render()
         g.mutate()
-    '''
     g = DEFAULT_GENOTYPE_2()
     g.render()
+    '''

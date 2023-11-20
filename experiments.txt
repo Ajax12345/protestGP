@@ -305,3 +305,24 @@ Experiment 17:
     
 
     Output folder: o16   
+
+
+Experiment 18:
+    Nov 17 @ 2:47 PM
+
+    Change trait vectors to have hard-coded booleans
+        - Running Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        - verbose output of all interactions, traits, circuits, etc.
+    
+
+    Output folder: o17  
+
+Experiment 19:
+    Nov 20 @ 5:05 PM
+
+    Traits are now 0.8/0.4 probability-based
+        - Running Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        - verbose output of all interactions, traits, circuits, etc.
+    
+
+    Output folder: o18
