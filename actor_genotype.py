@@ -819,7 +819,16 @@ if __name__ == '__main__':
     print(g)
     g.render()
     '''
-    #compute_node_addition()
-    g = Genotype.random_genotype_m1(4, 0, 4, 4, 1)
-    #g.render()
-    print(g.to_json())
+    results = []
+    for _ in range(10000):
+        g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
+        for m in range(5):
+            if m:
+                g.mutate()
+                
+            for i in itertools.product(*[[0, 1] for _ in range(4)]):
+                results.append(max(collections.Counter(g(*i)).items(), key=lambda x:x[1])[0])
+
+    print(sum(results)/len(results))
+    #0.50095625 (no mutations)
+    #0.49794 (five random mutations)

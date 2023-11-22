@@ -1,7 +1,7 @@
 import json, collections
 import matplotlib.pyplot as plt
 import itertools, string, pandas as pd
-import numpy as np
+import numpy as np, os
 
 TRAITS = {str(list(a)):b for a, b in zip(itertools.product(*[[0, 1] for _ in range(4)]), string.ascii_uppercase)}
 
@@ -102,9 +102,45 @@ def evolution_exploration() -> None:
         )
         plt.show()
         '''
+
+def merge_vals(seed:dict, d:dict) -> None:
+    for a, b in d.items():
+        if isinstance(b, dict):
+            n_seed = seed.get(a, {})
+            merge_vals(n_seed, b)
+            seed[a] = n_seed
+        else:
+            seed[a] = seed.get(a, []) + [b]
+
+
+def compute_avg(d:dict) -> None:
+    for a, b in d.items():
+        if isinstance(b, dict):
+            compute_avg(b)
+            continue
         
-     
+        d[a] = round(sum(b)/len(b))
+
+        
+def actor_decisions(folder:str) -> None:
+    merged_results = {}
+    for f_name in os.listdir(folder):
+        if f_name.startswith('generation_evolutions'):
+            with open(os.path.join(folder, f_name)) as f:
+                data = json.load(f)['actor_decision_evolutions']
+                merge_vals(merged_results, data)
+
+    
+    compute_avg(merged_results)
+
+    full_counter = []
+    for a in merged_results.values():
+        for b in a.values():
+            for c in b.values():
+                full_counter.append(int(c.get('true', 0)) > int(c.get('false', 0)))
+
+    print(sum(full_counter)/len(full_counter))
 
 
 if __name__ == '__main__':
-    evolution_exploration()
+    actor_decisions('o18')
