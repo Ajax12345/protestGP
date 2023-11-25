@@ -324,5 +324,16 @@ Experiment 19:
         - Running Genotype.random_genotype_m1(4, 0, 4, 4, 3)
         - verbose output of all interactions, traits, circuits, etc.
     
+    Future experiments:
+        - Make traits 0.8/0.2 probability-based
 
     Output folder: o18
+
+
+Experiment 20:
+    Nov 24 @ 6:25 AM
+
+    Running control of experiment 19
+
+
+    Output folder: o19

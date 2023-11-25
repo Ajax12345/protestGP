@@ -56,7 +56,7 @@ def simulate_generation(gen_num:int, control:bool) -> bool:
     return True
 
 if __name__ == '__main__':
-    _ = simulate_generation((1, 5000), False)
+    _ = simulate_generation((1, 5000), True)
     '''
     import concurrent.futures
 
