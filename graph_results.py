@@ -30,7 +30,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max
         plt.plot([*results], complexities, label = actor)
             
     plt.xlabel('Generation')
-    plt.ylabel('Median complexity')
+    plt.ylabel('Average complexity')
     plt.title('Complexity')
     plt.legend()
     min_y_lim = min(min(b) for _, b in final.items())
@@ -42,7 +42,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max
         max_y_lim = max(max_y_lim, max_y)
 
 
-    plt.ylim(min_y_lim, max_y_lim)
+    plt.ylim(13, 21)
     plt.show()
 
     if fitness_results:
@@ -55,7 +55,7 @@ def plot_main_complexities(folder = 'comp_matrices_mutations', min_y = None, max
             plt.plot([*results], fitnesses, label = actor)
                 
         plt.xlabel('Generation')
-        plt.ylabel('Median complexity')
+        plt.ylabel('Fitness')
         plt.title('Fitness')
         plt.legend()
         plt.show()

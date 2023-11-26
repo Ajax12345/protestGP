@@ -140,7 +140,19 @@ def actor_decisions(folder:str) -> None:
                 full_counter.append(int(c.get('true', 0)) > int(c.get('false', 0)))
 
     print(sum(full_counter)/len(full_counter))
+    print(json.dumps(merged_results, indent=4)[:20000])
 
 
 if __name__ == '__main__':
     actor_decisions('o18')
+    '''
+    Protestors v Police
+    Protestors v Counterprotestors
+    Protestors v Public
+    Public v CounterProtestors
+    Police v Counterprotestors
+
+    for each relationship above, draw separate line-graphs showing average true-false outputs as different lines over the 5000 iterations
+        moves['Police']['Protestors'], moves['Protestors']['Police']
+               
+    '''
