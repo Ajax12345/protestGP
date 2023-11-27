@@ -86,7 +86,7 @@ if __name__ == '__main__':
     plot_main_complexities('o17')
     '''
     plot_main_complexities('o18')
-    plot_main_complexities('o19')
+    #plot_main_complexities('o19')
     #_ = plot_main_complexities('o11', y1, y2)
     #plot_main_complexities('control_graphs')
     '''

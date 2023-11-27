@@ -141,18 +141,58 @@ def actor_decisions(folder:str) -> None:
 
     print(sum(full_counter)/len(full_counter))
     print(json.dumps(merged_results, indent=4)[:20000])
+    return merged_results
+
+def row_result(a, b):
+    return [(a/(a+b))*100, (b/(a+b))*100]
+
+def graph_results(folder:str) -> None:
+    merged_results = actor_decisions(folder)
+    _generations = [*merged_results][:-1]
+    generations = [*map(int, _generations)]
+    pairings = [('Protestors', 'Police'), ('Protestors', 'Public'), ('Protestors', 'CounterProtestors'), ('Public', 'CounterProtestors'), ('CounterProtestors', 'Police')]
+    for a1, a2 in pairings:
+        print((a1, a2))
+        #print(min(int(i) for i in _generations if (a1 not in merged_results[i] or a2 not in merged_results[i][a1]) or (a2 not in merged_results[i] or a1 not in merged_results[i][a2])))
+        tr, fl = zip(*[row_result(merged_results[i][a1][a2].get('true', 0), merged_results[i][a1][a2].get('false', 0)) for i in _generations])
+        fig, (ax1, ax2) = plt.subplots(1, 2,  sharey=True)
+        ax1.plot(generations, tr, label = 'True', color = 'cadetblue')
+        ax1.plot(generations, fl, label = 'False', color = 'sandybrown')
+        ax1.title.set_text(a1)
+        ax1.set_xlabel('Generation')
+        ax1.set_ylabel('Decision Percentage')
+        ax1.legend()
+        tr, fl = zip(*[row_result(merged_results[i][a2][a1].get('true', 0), merged_results[i][a2][a1].get('false', 0)) for i in _generations])
+
+        ax2.plot(generations, tr, label = 'True', color = 'cadetblue')
+        ax2.plot(generations, fl, label = 'False', color = 'sandybrown')
+        ax2.title.set_text(a2)
+        ax2.legend()
+        ax2.set_xlabel('Generation')
+        ax2.set_ylabel('Decision Percentage')
+
+        fig.suptitle(f'{a1} vs {a2}')
+        plt.show()
 
 
 if __name__ == '__main__':
-    actor_decisions('o18')
+    #actor_decisions('o18')
+    graph_results('o18')
     '''
     Protestors v Police
-    Protestors v Counterprotestors
+    Protestors v CounterProtestors
     Protestors v Public
     Public v CounterProtestors
     Police v Counterprotestors
 
+
+    Protestors.interaction(Police, [[(2, 1), (-1, 2)], [(2, -2), (-1, 2)]])
+    Protestors.interaction(Public, [[(-2, -1), (-2, 2)], [(2, -2), (3, 3)]])
+    Protestors.interaction(CounterProtestors, [[(1, 1), (-1, 2)], [(2, -1), (2, 1)]])
+    Public.interaction(CounterProtestors, [[(2, 1), (0, 1)], [(-1, -1), (-1, 2)]])
+    CounterProtestors.interaction(Police, [[(-1, -1), (-1, 1)], [(2, -1), (2, 2)]])
+
     for each relationship above, draw separate line-graphs showing average true-false outputs as different lines over the 5000 iterations
         moves['Police']['Protestors'], moves['Protestors']['Police']
-               
+
     '''
