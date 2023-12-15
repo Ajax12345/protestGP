@@ -761,7 +761,7 @@ if __name__ == '__main__':
 
         #print(complexity_changes)
         print('final time', time.time() - t)
-        plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
+        plt.bar(['Activate node', 'Deactivate node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
         plt.show()
 
     def test_mutation_over_random(method, mutation_method, *args) -> None:
@@ -777,6 +777,7 @@ if __name__ == '__main__':
                     complexity_changes[i].append(c2 - c1)
             print(I)
 
+        plt.ylim(-1.4, 1.2)
         plt.bar(['Add node', 'Remove node', 'Rewire', 'Update'], [sum(b)/len(b) for b in complexity_changes.values()])
         plt.show()
 
@@ -796,7 +797,7 @@ if __name__ == '__main__':
         #19.01 on random levels back adjustment
     
     
-    #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 1)
+    test_mutation_over_random(Genotype.random_genotype, 'mutate', 5, 2, 5, 1)
     #test_mutation_over_random(Genotype.random_genotype, 5, 2, 5, 4)
     #test_mutation_over_random(Genotype.random_genotype_m1, 'mutate_v2', 4, 0, 4, 4, 3)
     
@@ -819,6 +820,7 @@ if __name__ == '__main__':
     print(g)
     g.render()
     '''
+    '''
     results = []
     for _ in range(10000):
         g = Genotype.random_genotype_m1(4, 0, 4, 4, 3)
@@ -830,5 +832,6 @@ if __name__ == '__main__':
                 results.append(max(collections.Counter(g(*i)).items(), key=lambda x:x[1])[0])
 
     print(sum(results)/len(results))
+    '''
     #0.50095625 (no mutations)
     #0.49794 (five random mutations)
