@@ -1,1 +1,2 @@
 # protest_DEMO
+This is the repository for an adaption of Moran and Pollack's [*Evolving Complexity in Prediction Games*](https://pubmed.ncbi.nlm.nih.gov/30933627/) in the context of a four-actor protest. The code also contains an implementation of a novel [CGP](https://link.springer.com/article/10.1007/s10710-019-09360-6) graph network and mutational scheme. The accompanying paper for this work can be found [here](https://github.com/Ajax12345/protest_DEMO/blob/main/ProtestGP__Coevolutionary_Genetic_Programming_For_Simulating_Collective_Action.pdf). 
